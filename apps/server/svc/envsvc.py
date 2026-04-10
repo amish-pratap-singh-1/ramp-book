@@ -1,23 +1,18 @@
+from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-
-class Settings(BaseSettings):
+BASE_DIR = Path(__file__).resolve().parents[3]
+class AppEnv(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=BASE_DIR / ".env",
+        extra="ignore"
     )
-
-    # Postgres bootstrap
-    postgres_user: str
-    postgres_password: str
-    postgres_db: str
 
     # App DB config
     app_db: str
     app_user: str
     app_password: str
 
-    # optional extras
     db_host: str = "localhost"
     db_port: int = 5432
