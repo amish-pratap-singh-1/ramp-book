@@ -1,0 +1,115 @@
+{
+  "club": {
+    "name": "Cedar Valley Flying Club",
+    "home_base": "KDTO",
+    "timezone": "America/Chicago"
+  },
+  "aircraft": [
+    {
+      "id": "ac-001",
+      "tail_number": "N7421T",
+      "model": "Cessna 172S Skyhawk",
+      "year": 2008,
+      "hourly_rate_usd": 165.0,
+      "total_hobbs_hours": 4821.3,
+      "notes": "IFR equipped, G1000"
+    },
+    {
+      "id": "ac-002",
+      "tail_number": "N2198K",
+      "model": "Cessna 172N Skyhawk",
+      "year": 1978,
+      "hourly_rate_usd": 135.0,
+      "total_hobbs_hours": 9104.7,
+      "notes": "Steam gauges, good primary trainer"
+    },
+    {
+      "id": "ac-003",
+      "tail_number": "N55XJ",
+      "model": "Piper PA-28-161 Warrior III",
+      "year": 2002,
+      "hourly_rate_usd": 150.0,
+      "total_hobbs_hours": 6310.0,
+      "notes": "IFR equipped"
+    },
+    {
+      "id": "ac-004",
+      "tail_number": "N881SR",
+      "model": "Cirrus SR20",
+      "year": 2015,
+      "hourly_rate_usd": 245.0,
+      "total_hobbs_hours": 2190.5,
+      "notes": "Checkout required"
+    },
+    {
+      "id": "ac-005",
+      "tail_number": "N304RG",
+      "model": "Piper PA-28R-201 Arrow",
+      "year": 1998,
+      "hourly_rate_usd": 195.0,
+      "total_hobbs_hours": 7855.2,
+      "notes": "Complex aircraft, checkout required"
+    }
+  ],
+  "instructors": [
+    {
+      "id": "in-001",
+      "name": "Marcus Reilly",
+      "email": "[email protected]",
+      "ratings": ["CFI", "CFII", "MEI"]
+    },
+    {
+      "id": "in-002",
+      "name": "Priya Natarajan",
+      "email": "[email protected]",
+      "ratings": ["CFI", "CFII"]
+    },
+    {
+      "id": "in-003",
+      "name": "Danielle Okafor",
+      "email": "[email protected]",
+      "ratings": ["CFI"]
+    }
+  ],
+  "members": [
+    { "id": "mb-001", "name": "James Chen",       "email": "[email protected]",       "certificate": "Private" },
+    { "id": "mb-002", "name": "Sofia Alvarez",    "email": "[email protected]",    "certificate": "Private" },
+    { "id": "mb-003", "name": "Henry Whitcombe",  "email": "[email protected]",  "certificate": "Commercial" },
+    { "id": "mb-004", "name": "Aisha Bello",      "email": "[email protected]",      "certificate": "Student" },
+    { "id": "mb-005", "name": "Tomas Ribeiro",    "email": "[email protected]",    "certificate": "Private" },
+    { "id": "mb-006", "name": "Ingrid Lindqvist", "email": "[email protected]", "certificate": "Private" },
+    { "id": "mb-007", "name": "Dev Malhotra",     "email": "[email protected]",     "certificate": "Student" },
+    { "id": "mb-008", "name": "Rachel Grossman",  "email": "[email protected]",  "certificate": "ATP" },
+    { "id": "mb-009", "name": "Kofi Mensah",      "email": "[email protected]",      "certificate": "Private" },
+    { "id": "mb-010", "name": "Eleanor Park",     "email": "[email protected]",     "certificate": "Commercial" }
+  ],
+  "admins": [
+    { "id": "ad-001", "name": "Walter Briggs", "email": "[email protected]", "role": "Club Manager" }
+  ],
+  "reservations": [
+    { "id": "rv-001", "aircraft_id": "ac-001", "member_id": "mb-001", "instructor_id": null,     "start": "2026-04-08T14:00:00-05:00", "end": "2026-04-08T16:30:00-05:00", "status": "confirmed" },
+    { "id": "rv-002", "aircraft_id": "ac-002", "member_id": "mb-004", "instructor_id": "in-002", "start": "2026-04-08T15:00:00-05:00", "end": "2026-04-08T17:00:00-05:00", "status": "confirmed" },
+    { "id": "rv-003", "aircraft_id": "ac-003", "member_id": "mb-002", "instructor_id": null,     "start": "2026-04-09T08:00:00-05:00", "end": "2026-04-09T11:00:00-05:00", "status": "confirmed" },
+    { "id": "rv-004", "aircraft_id": "ac-004", "member_id": "mb-008", "instructor_id": null,     "start": "2026-04-09T13:00:00-05:00", "end": "2026-04-09T17:00:00-05:00", "status": "confirmed" },
+    { "id": "rv-005", "aircraft_id": "ac-001", "member_id": "mb-005", "instructor_id": null,     "start": "2026-04-10T09:00:00-05:00", "end": "2026-04-10T12:00:00-05:00", "status": "confirmed" },
+    { "id": "rv-006", "aircraft_id": "ac-002", "member_id": "mb-007", "instructor_id": "in-001", "start": "2026-04-10T14:00:00-05:00", "end": "2026-04-10T16:00:00-05:00", "status": "confirmed" },
+    { "id": "rv-007", "aircraft_id": "ac-005", "member_id": "mb-003", "instructor_id": null,     "start": "2026-04-11T10:00:00-05:00", "end": "2026-04-11T13:30:00-05:00", "status": "confirmed" },
+    { "id": "rv-008", "aircraft_id": "ac-003", "member_id": "mb-009", "instructor_id": null,     "start": "2026-04-11T15:00:00-05:00", "end": "2026-04-11T18:00:00-05:00", "status": "confirmed" },
+    { "id": "rv-009", "aircraft_id": "ac-001", "member_id": "mb-006", "instructor_id": "in-003", "start": "2026-04-12T09:00:00-05:00", "end": "2026-04-12T11:00:00-05:00", "status": "confirmed" },
+    { "id": "rv-010", "aircraft_id": "ac-004", "member_id": "mb-010", "instructor_id": null,     "start": "2026-04-12T13:00:00-05:00", "end": "2026-04-12T16:00:00-05:00", "status": "confirmed" },
+    { "id": "rv-011", "aircraft_id": "ac-002", "member_id": "mb-001", "instructor_id": null,     "start": "2026-04-13T08:00:00-05:00", "end": "2026-04-13T10:00:00-05:00", "status": "confirmed" },
+    { "id": "rv-012", "aircraft_id": "ac-003", "member_id": "mb-004", "instructor_id": "in-002", "start": "2026-04-13T11:00:00-05:00", "end": "2026-04-13T13:00:00-05:00", "status": "confirmed" },
+    { "id": "rv-013", "aircraft_id": "ac-005", "member_id": "mb-008", "instructor_id": null,     "start": "2026-04-14T14:00:00-05:00", "end": "2026-04-14T17:00:00-05:00", "status": "confirmed" },
+    { "id": "rv-014", "aircraft_id": "ac-001", "member_id": "mb-002", "instructor_id": null,     "start": "2026-04-15T09:00:00-05:00", "end": "2026-04-15T12:00:00-05:00", "status": "confirmed" },
+    { "id": "rv-015", "aircraft_id": "ac-002", "member_id": "mb-005", "instructor_id": "in-001", "start": "2026-04-15T15:00:00-05:00", "end": "2026-04-15T17:00:00-05:00", "status": "confirmed" }
+  ],
+  "maintenance_windows": [
+    {
+      "id": "mw-001",
+      "aircraft_id": "ac-004",
+      "start": "2026-04-16T00:00:00-05:00",
+      "end": "2026-04-18T23:59:59-05:00",
+      "reason": "100-hour inspection"
+    }
+  ]
+}

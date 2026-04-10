@@ -1,0 +1,15 @@
+q1. How do we log the flight data (Hobbs/Tacho/Timestamp)
+- Manually our trusted staff logs it manually after each flight 
+- hardware integration, the plane talks to our backend
+
+- Plogbook
+    - Uses semi-manual approach
+    - Hobbs/Tach entered manually
+    - Timestamps managed via digital logs
+    - Focus on scheduling + billing + compliance
+
+q2. Need to get Minimum Equipment List(MEL)
+q3. How does Xero sync works?
+    - sync invoices
+    - sync payments 
+q4. what is CBTA-based Grading?

@@ -1,0 +1,146 @@
+Similar softwares
+
+1. https://www.plogbook.com/
+Features:
+    - Scheduling - Visual Calender with live availability, instructor
+    coordination, and instant booking confirmations.
+    - Flight Logging - Digital tech logs with automatic hour calculations,
+    Hobbs/Tacho/Timestamp, and CSV exports.
+    - Maintenance - Defect reporting with traffic-light severity, MEL
+    integration, and automatic engineer alerts.
+    - Student records - Syllabus tracking, lesson reports, exercise sign-offs,
+    and DTO-audited compliance tools.
+    - Payments - Stripe-powered payments, automatic flight billing, membership
+    collection, and Xero sync.
+
+New Terms:
+    - Hobbs/Tacho/Timestamp
+        1. HOBBS TIME
+        Definition:
+        - Measures real elapsed time when aircraft is powered or engine running.
+
+        How it works:
+        - Starts: Engine oil pressure ON or master switch ON
+        - Stops: Engine/power OFF
+
+        Measures:
+        - Actual clock time (like stopwatch)
+
+        Usage:
+        - Primary billing metric
+        - Aircraft rental charges
+
+        Key Points:
+        - Includes taxi, idle, run-up time
+        - Independent of RPM
+
+        2. TACH TIME (TACHOMETER)
+        Definition:
+        - Measures engine usage based on RPM, not real time.
+
+        How it works:
+        - Normal RPM → real-time rate
+        - Low RPM → slower time
+        - High RPM → faster time
+
+        Measures:
+        - Engine wear
+
+        Usage:
+        - Maintenance scheduling
+        - Oil change, inspections
+
+        Key Points:
+        - Usually less than Hobbs time
+        - Better for maintenance, not billing
+
+        3. TIMESTAMP
+        Definition:
+        - Records exact time of flight events.
+
+        Events:
+        - Engine start
+        - Takeoff
+        - Landing
+        - Shutdown
+
+        Measures:
+        - Exact time points (ISO format)
+
+        Derived Metrics:
+        block_time = shutdown - engine_start
+        air_time   = landing - takeoff
+        taxi_time  = block_time - air_time
+
+        Usage:
+        - Flight logs
+        - Student records
+        - Compliance and analytics
+
+
+        COMBINED USAGE
+
+        Billing:
+        flight_cost = hobbs_time * hourly_rate
+
+        Maintenance:
+        if tach_time exceeds threshold → trigger service
+
+        Training / Logs:
+        student_air_time = landing - takeoff
+
+        KEY TAKEAWAY
+
+        Hobbs = Billing (money)
+        Tach  = Maintenance (engine health)
+        Time  = Audit & analytics (truth)
+
+    - Traffic-light severity: Defects are tagged as Green (minor, no impact),
+    Amber (fly with caution/restrictions), or Red (aircraft grounded), 
+    driving aircraft availability automatically.
+    
+    - MEL integration: Each defect is validated against the Minimum Equipment 
+    List to determine if the aircraft can legally fly and under what conditions 
+    (e.g., day-only, restricted ops), with rules applied automatically.
+
+    - Exercise sign-off: Each training exercise is formally approved by an 
+    authorized instructor once the student meets required standards, 
+    creating a verified, non-editable record of progress and ensuring no 
+    critical steps are skipped.
+
+    - DTO-audited compliance tools: Built-in controls aligned with Declared 
+    Training Organization requirements, including audit trails, instructor 
+    validation, and tamper-proof records to demonstrate that training follows 
+    the approved syllabus during inspections.
+
+    - Xero sync: Automatically pushes invoices, payments, and revenue data to 
+    Xero, ensuring real-time accounting records, reducing manual data entry, 
+    and keeping financial reporting (taxes, reconciliation, revenue tracking) 
+    fully in sync with flight operations.
+    
+
+2. https://flyfourforces.com/
+    Extra Features (over Plogbook):
+
+    - Invoicing & Accounting – Automated invoicing, accounts management, and 
+    integrated payment processing with lower transaction cost partnerships.
+    - Inventory & Parts Management – Maintenance module includes inventory 
+    tracking and parts/work order management 
+    (more operational depth than basic defect logging).
+    - CBTA-based Grading – Competency-Based Training & Assessment grading 
+    system for structured pilot evaluation.
+    - Safety Management System (SMS) – Built-in safety tracking and monitoring 
+    tools for operational risk management.
+    - Real-time Operational Dashboard (“Pulse”) – Aggregated live data view 
+    for tracking school performance, student engagement, and operational 
+    metrics.
+    - Student Retention Tools – Features designed to reduce drop-offs and 
+    improve student engagement/continuity.
+    - Proficiency Tracking – Tracks pilot skill progression beyond basic 
+    syllabus tracking (performance-based insights).
+    - External Training System Integrations – Integration with systems like 
+    Cessna/King Schools to avoid duplicate data entry and sync training data.
+    - Cost Optimization (Payments) – Built-in payment partnerships aimed at 
+    reducing credit card processing fees for schools.
+    - Real-time Activity Updates – Live operational updates across scheduling, 
+    training, and billing for better coordination.
