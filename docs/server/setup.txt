@@ -10,8 +10,17 @@ activate the virtual environment
 source .venv/bin/activate
 
 Install required packages 
-pip install fastapi sqlalchemy uvicorn
+pip install fastapi sqlalchemy uvicorn alembic asyncpg pydantic-settings
 
 create a .gitignore file 
 https://github.com/fastapi/fastapi/blob/master/.gitignore
 
+freeze the dependencies
+pip freeze > requirements.txt
+
+If vscode python interpreter does not work 
+.vscode/settings.json
+add this setting
+{
+  "python.defaultInterpreterPath": "/home/amish-pratap-singh/Desktop/ramp-book/apps/server/.venv/bin/python"
+}
