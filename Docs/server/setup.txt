@@ -1,0 +1,17 @@
+using python 3.13.0
+
+mkdir -p apps/server
+cd apps/server/
+
+create virtual environment 
+python -m venv .venv
+
+activate the virtual environment
+source .venv/bin/activate
+
+Install required packages 
+pip install fastapi sqlalchemy uvicorn
+
+create a .gitignore file 
+https://github.com/fastapi/fastapi/blob/master/.gitignore
+

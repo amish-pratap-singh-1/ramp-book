@@ -1,0 +1,30 @@
+1. RBAC (Authentication)
+    - member
+    - instructor
+    - Admin
+2. Aircraft fleet view
+    - see list of aircraft
+    - tail no, modal , availability
+3. Reservation system
+    - select aircraft
+    - select time window
+    - select instructor(optional)
+    - create Reservation
+    prevent:
+        - aircraft double booking
+        - instructor double booking
+        - member double booking
+4. My Reservation
+    - user can view upcoming reservations
+    - edit reservations
+    - cancel reservations
+
+5. Admin Panel
+    - View all reservations
+    - Add/remove aircraft
+    - add maintenance window
+    prevent: 
+        - aircraft under maintenance no booking allowed
+6. Flight Completion
+    - user enters ending hobbs
+    - system updates aircraft total hobs hours
