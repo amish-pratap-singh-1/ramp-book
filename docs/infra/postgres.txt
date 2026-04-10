@@ -1,0 +1,11 @@
+using postgres:18.3-bookworm image
+
+Need to encrypt db password 
+
+moved both the root user and application user to init.sh script
+
+you can have the root user and application user come from .env
+
+We have root user and then we have a limited access application user 
+
+tested the permissions of root user and app user
