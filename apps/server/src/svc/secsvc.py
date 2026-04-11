@@ -33,6 +33,7 @@ class SecSvc:
         """
         if self._settings is None:
             self._settings = AppEnv()
+            print(self._settings)
 
     def get_appenv(self) -> AppEnv:
         """

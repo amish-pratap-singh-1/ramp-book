@@ -11,6 +11,9 @@ importers:
       '@tanstack/react-query':
         specifier: ^5.97.0
         version: 5.97.0(react@19.2.4)
+      axios:
+        specifier: ^1.15.0
+        version: 1.15.0
       next:
         specifier: 16.2.3
         version: 16.2.3(@babel/core@7.29.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -36,9 +39,6 @@ importers:
       '@types/react-dom':
         specifier: ^19
         version: 19.2.3(@types/react@19.2.14)
-      axios:
-        specifier: ^1.15.0
-        version: 1.15.0
       babel-plugin-react-compiler:
         specifier: 1.0.0
         version: 1.0.0

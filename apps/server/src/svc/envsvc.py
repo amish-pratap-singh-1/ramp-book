@@ -6,7 +6,15 @@ from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-BASE_DIR = Path(__file__).resolve().parents[4]
+
+def find_env_file() -> Path:
+    """Climb up from current file to find .env"""
+    current = Path(__file__).resolve()
+    for parent in current.parents:
+        if (parent / ".env").exists():
+            return parent / ".env"
+    # Fallback to local directory if not found
+    return Path(".env")
 
 
 class AppEnv(BaseSettings):
@@ -15,7 +23,7 @@ class AppEnv(BaseSettings):
     """
 
     model_config = SettingsConfigDict(
-        env_file=BASE_DIR / ".env", extra="ignore"
+        env_file=find_env_file(), extra="ignore"
     )
 
     # App DB config

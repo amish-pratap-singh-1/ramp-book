@@ -1,0 +1,42 @@
+# Python bytecode and cache
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+.cache/
+
+# Environments
+.venv/
+venv/
+env/
+.env
+.env.*
+
+# Git
+.git/
+.gitignore
+
+# Testing and Coverage
+.tox/
+.coverage
+.coverage.*
+nosetests.xml
+coverage.xml
+htmlcov/
+.pytest_cache/
+
+# Local configuration and logs
+*.log
+.vscode/
+.idea/
+.DS_Store
+
+# Docker specific (optional)
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
