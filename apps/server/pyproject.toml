@@ -13,7 +13,10 @@ dependencies = [
     "alembic",
     "asyncpg",
     "pydantic-settings",
-    "psycopg2-binary"
+    "psycopg2-binary",
+    "python-jose",
+    "bcrypt",
+    "python-multipart",
 ]
 
 

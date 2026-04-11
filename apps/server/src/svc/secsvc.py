@@ -5,8 +5,8 @@ Security Service Module
 import datetime
 from typing import Optional
 
+import bcrypt
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 
 from src.svc.envsvc import AppEnv
 
@@ -19,7 +19,6 @@ class SecSvc:
 
     _instance = None
     _settings: AppEnv | None = None
-    _pwd_context: CryptContext | None = None
 
     def __new__(cls):
         if cls._instance is None:
@@ -33,9 +32,6 @@ class SecSvc:
         """
         if self._settings is None:
             self._settings = AppEnv()
-            self._pwd_context = CryptContext(
-                schemes=["bcrypt"], deprecated="auto"
-            )
 
     def get_appenv(self) -> AppEnv:
         """
@@ -44,10 +40,12 @@ class SecSvc:
         return self._settings
 
     def hash_password(self, plain: str) -> str:
-        return self._pwd_context.hash(plain)
+        """Method to hash password"""
+        return bcrypt.hashpw(plain.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
     def verify_password(self, plain: str, hashed: str) -> bool:
-        return self._pwd_context.verify(plain, hashed)
+        """Method to verify password"""
+        return bcrypt.checkpw(plain.encode("utf-8"), hashed.encode("utf-8"))
 
     def create_access_token(
         self,
@@ -55,11 +53,9 @@ class SecSvc:
         role: str,
         expires_seconds: Optional[int] = None,
     ) -> str:
-        expire = datetime.datetime.now(
-            datetime.timezone.utc
-        ) + datetime.timedelta(
-            seconds=expires_seconds
-            or self._settings.access_token_expire_seconds
+        """Method to create access token"""
+        expire = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(
+            seconds=expires_seconds or self._settings.access_token_expire_seconds
         )
         payload = {
             "sub": str(user_id),

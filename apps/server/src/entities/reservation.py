@@ -21,12 +21,8 @@ class Reservation(TimestampMixin, Base):
 
     __table_args__ = (
         # DB-level guard: end must be after start
-        CheckConstraint(
-            "end_time > start_time", name="ck_reservation_end_after_start"
-        ),
-        CheckConstraint(
-            "hobbs_end > hobbs_start", name="ck_hobbs_end_after_start"
-        ),
+        CheckConstraint("end_time > start_time", name="ck_reservation_end_after_start"),
+        CheckConstraint("hobbs_end > hobbs_start", name="ck_hobbs_end_after_start"),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)

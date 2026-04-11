@@ -29,9 +29,7 @@ class Aircraft(TimestampMixin, Base):
     year: Mapped[int] = mapped_column(Integer, nullable=False)
     hourly_rate_usd: Mapped[float] = mapped_column(Float, nullable=False)
 
-    total_hobbs_hours: Mapped[float] = mapped_column(
-        Float, nullable=False, default=0.0
-    )
+    total_hobbs_hours: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
 
     status: Mapped[AircraftStatus] = mapped_column(
         SAEnum(AircraftStatus),
@@ -41,9 +39,7 @@ class Aircraft(TimestampMixin, Base):
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     club: Mapped["Club"] = relationship(back_populates="aircraft")
-    reservations: Mapped[list["Reservation"]] = relationship(
-        back_populates="aircraft"
-    )
+    reservations: Mapped[list["Reservation"]] = relationship(back_populates="aircraft")
     maintenance_windows: Mapped[list["MaintenanceWindow"]] = relationship(
         back_populates="aircraft"
     )

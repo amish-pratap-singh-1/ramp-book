@@ -26,6 +26,4 @@ class MaintenanceWindow(TimestampMixin, Base):
     )
     reason: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    aircraft: Mapped["Aircraft"] = relationship(
-        back_populates="maintenance_windows"
-    )
+    aircraft: Mapped["Aircraft"] = relationship(back_populates="maintenance_windows")
