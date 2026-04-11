@@ -1,7 +1,10 @@
 # entities/user.py
 import enum
-from sqlalchemy import String, Enum as SAEnum, ForeignKey
+
+from sqlalchemy import Enum as SAEnum
+from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from src.entities.base import Base, TimestampMixin
 
 
@@ -23,11 +26,13 @@ class User(TimestampMixin, Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     club_id: Mapped[int] = mapped_column(
-        ForeignKey("clubs.id"), nullable=False, index=True)
+        ForeignKey("clubs.id"), nullable=False, index=True
+    )
 
     # Auth
     email: Mapped[str] = mapped_column(
-        String(255), unique=True, index=True, nullable=False)
+        String(255), unique=True, index=True, nullable=False
+    )
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
 
     # Identity
@@ -36,12 +41,14 @@ class User(TimestampMixin, Base):
 
     # Member-specific (nullable for non-members)
     certificate: Mapped[CertificateType | None] = mapped_column(
-        SAEnum(CertificateType), nullable=True)
+        SAEnum(CertificateType), nullable=True
+    )
 
     # Instructor-specific ratings stored as plain text array via association table (see InstructorRating)
     # Or simpler: store as comma-separated string for MVP
     ratings: Mapped[str | None] = mapped_column(
-        String(100), nullable=True)  # e.g. "CFI,CFII,MEI"
+        String(100), nullable=True
+    )  # e.g. "CFI,CFII,MEI"
 
     is_active: Mapped[bool] = mapped_column(default=True, nullable=False)
 

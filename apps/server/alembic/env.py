@@ -1,26 +1,30 @@
 from logging.config import fileConfig
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
+
+from sqlalchemy import engine_from_config, pool
 
 from alembic import context
-from svc.secsvc import SecSvc
-from entities.base import Base
-from entities.club import Club
-from entities.user import User
-from entities.aircraft import Aircraft
-from entities.reservation import Reservation
-from entities.maintenance_window import MaintenanceWindow
-__all__ = ["Base", "Club", "User", "Aircraft",
-           "Reservation", "MaintenanceWindow"]
+from src.entities.aircraft import Aircraft
+from src.entities.base import Base
+from src.entities.club import Club
+from src.entities.maintenance_window import MaintenanceWindow
+from src.entities.reservation import Reservation
+from src.entities.user import User
+from src.svc.secsvc import SecSvc
+
+__all__ = [
+    "Base",
+    "Club",
+    "User",
+    "Aircraft",
+    "Reservation",
+    "MaintenanceWindow",
+]
 setting = SecSvc().get_appenv()
 
 # pylint: disable=no-member
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
-url = setting.database_url.replace(
-    "postgresql+asyncpg://",
-    "postgresql://"
-)
+url = setting.database_url.replace("postgresql+asyncpg://", "postgresql://")
 config = context.config
 config.set_main_option("sqlalchemy.url", url)
 

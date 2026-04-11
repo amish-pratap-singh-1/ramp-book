@@ -1,10 +1,13 @@
 """
 Security Service Module
 """
+
 import datetime
 from typing import Optional
+
 from jose import JWTError, jwt
 from passlib.context import CryptContext
+
 from src.svc.envsvc import AppEnv
 
 
@@ -31,7 +34,8 @@ class SecSvc:
         if self._settings is None:
             self._settings = AppEnv()
             self._pwd_context = CryptContext(
-                schemes=["bcrypt"], deprecated="auto")
+                schemes=["bcrypt"], deprecated="auto"
+            )
 
     def get_appenv(self) -> AppEnv:
         """
@@ -51,8 +55,11 @@ class SecSvc:
         role: str,
         expires_seconds: Optional[int] = None,
     ) -> str:
-        expire = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(
-            seconds=expires_seconds or self._settings.access_token_expire_seconds
+        expire = datetime.datetime.now(
+            datetime.timezone.utc
+        ) + datetime.timedelta(
+            seconds=expires_seconds
+            or self._settings.access_token_expire_seconds
         )
         payload = {
             "sub": str(user_id),
@@ -63,7 +70,7 @@ class SecSvc:
         return jwt.encode(
             payload,
             self._settings.secret_key,
-            algorithm=self._settings.algorithm
+            algorithm=self._settings.algorithm,
         )
 
     def decode_access_token(self, token: str) -> dict:
@@ -75,7 +82,7 @@ class SecSvc:
         return jwt.decode(
             token,
             self._settings.secret_key,
-            algorithms=[self._settings.algorithm]
+            algorithms=[self._settings.algorithm],
         )
 
     def get_user_id_from_token(self, token: str) -> int:

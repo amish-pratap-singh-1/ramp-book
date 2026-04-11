@@ -23,7 +23,7 @@ alembic init alembic
 
 poetry setup 
 
-poetry run black .
+poetry run black . --line-length 79
 
 poetry run isort .
 
