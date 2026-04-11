@@ -35,8 +35,8 @@ async def seed():
             email="james.chen@cedarvalleyfc.com",
             hashed_password=sec.hash_password("changeme123"),
             full_name="James Chen",
-            role=UserRole.member,
-            certificate=CertificateType.private,
+            role=UserRole.MEMBER,
+            certificate=CertificateType.PRIVATE,
             is_active=True,
         )
 
@@ -46,7 +46,7 @@ async def seed():
             email="marcus.reilly@cedarvalleyfc.com",
             hashed_password=sec.hash_password("changeme123"),
             full_name="Marcus Reilly",
-            role=UserRole.instructor,
+            role=UserRole.INSTRUCTOR,
             ratings="CFI,CFII,MEI",
             is_active=True,
         )
@@ -57,7 +57,7 @@ async def seed():
             email="walter.briggs@cedarvalleyfc.com",
             hashed_password=sec.hash_password("changeme123"),
             full_name="Walter Briggs",
-            role=UserRole.admin,
+            role=UserRole.ADMIN,
             is_active=True,
         )
 
