@@ -1,0 +1,6 @@
+create pyproject.toml
+
+move all the code to src folder
+
+setup alembic with sqlalchemy for migrations 
+

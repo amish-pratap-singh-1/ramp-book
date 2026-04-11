@@ -1,0 +1,5 @@
+To start
+docker compose up --build
+
+To tear down
+docker compose down -v

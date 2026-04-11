@@ -5,7 +5,7 @@ from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-BASE_DIR = Path(__file__).resolve().parents[3]
+BASE_DIR = Path(__file__).resolve().parents[4]
 
 
 class AppEnv(BaseSettings):
@@ -24,3 +24,17 @@ class AppEnv(BaseSettings):
 
     db_host: str = "localhost"
     db_port: int = 5432
+
+    @property
+    def database_url(self) -> str:
+        """
+        Construct async SQLAlchemy database URL.
+        """
+        return (
+            f"postgresql+asyncpg://"
+            f"{self.app_user}:"
+            f"{self.app_password}@"
+            f"{self.db_host}:"
+            f"{self.db_port}/"
+            f"{self.app_db}"
+        )

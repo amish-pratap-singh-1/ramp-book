@@ -1,7 +1,7 @@
 """
 Security Service Module
 """
-from apps.server.svc.envsvc import AppEnv
+from svc.envsvc import AppEnv
 
 
 class SecSvc:

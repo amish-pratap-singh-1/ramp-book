@@ -1,0 +1,101 @@
+# Common workflow
+alembic revision --autogenerate -m "add users table"
+alembic upgrade head
+
+# 🔧 Initialization
+initialize alembic
+alembic init alembic
+
+
+# 📄 Create Migrations
+
+create new empty migration
+alembic revision -m "message"
+
+auto generate migration based on models
+alembic revision --autogenerate -m "message"
+
+create revision with custom ID
+alembic revision -m "msg" --rev-id 1234
+
+create branch
+alembic revision -m "branch" --branch-label my_branch
+
+
+# 🚀 Upgrade (Apply Migrations)
+
+upgrade to latest
+alembic upgrade head
+
+upgrade to specific revision
+alembic upgrade <revision_id>
+
+upgrade one step
+alembic upgrade +1
+
+upgrade multiple steps
+alembic upgrade +3
+
+
+# ⏪ Downgrade (Rollback)
+
+downgrade one step 
+alembic downgrade -1
+
+downgrade multiple steps 
+alembic downgrade -3
+
+downgrade to specific revision
+alembic downgrade <revision_id>
+
+downgrade to base
+alembic downgrade base
+
+
+# 📊 Migration Info
+
+show current revision
+alembic current
+
+show migration history
+alembic history
+
+show detailed history
+alembic history --verbose
+
+show latest heads
+alembic heads
+
+show branches
+alembic branches
+
+
+# 🔍 Inspect
+
+show specific migration
+alembic show <revision_id>
+
+
+# 🏷️ Stamp (no DB changes)
+
+mark database as latest
+alembic stamp head
+
+mark database with specific revision
+alembic stamp <revision_id>
+
+reset to base without running migrations
+alembic stamp base
+
+
+# ⚙️ Advanced
+
+generate SQL without executing
+alembic upgrade head --sql
+
+merge multiple heads
+alembic merge -m "merge heads" <rev1> <rev2>
+
+edit migration
+alembic edit <revision_id>
+

@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
     AsyncSession,
 )
-from apps.server.svc.secsvc import SecSvc
+from svc.secsvc import SecSvc
 
 
 class DbSvc:
@@ -31,16 +31,7 @@ class DbSvc:
         Initialize DB engine and sessionmaker once.
         """
         settings = SecSvc().get_appenv()
-
-        # Build URL
-        url = (
-            f"postgresql+asyncpg://"
-            f"{settings.app_user}:"
-            f"{settings.app_password}@"
-            f"{settings.db_host}:"
-            f"{settings.db_port}/"
-            f"{settings.app_db}"
-        )
+        url = settings.database_url
 
         self._engine = create_async_engine(
             url,

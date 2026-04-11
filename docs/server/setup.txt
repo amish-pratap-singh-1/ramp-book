@@ -18,9 +18,5 @@ https://github.com/fastapi/fastapi/blob/master/.gitignore
 freeze the dependencies
 pip freeze > requirements.txt
 
-If vscode python interpreter does not work 
-.vscode/settings.json
-add this setting
-{
-  "python.defaultInterpreterPath": "/home/amish-pratap-singh/Desktop/ramp-book/apps/server/.venv/bin/python"
-}
+Alembic setup
+alembic init alembic
