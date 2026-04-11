@@ -20,3 +20,13 @@ pip freeze > requirements.txt
 
 Alembic setup
 alembic init alembic
+
+poetry setup 
+
+poetry run black .
+
+poetry run isort .
+
+poetry install
+
+poetry run uvicorn src.api.main:app --reload

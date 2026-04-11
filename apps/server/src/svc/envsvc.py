@@ -25,6 +25,10 @@ class AppEnv(BaseSettings):
     db_host: str = "localhost"
     db_port: int = 5432
 
+    secret_key: str
+    access_token_expire_seconds: int = 28800
+    algorithm: str = "HS256"
+
     @property
     def database_url(self) -> str:
         """

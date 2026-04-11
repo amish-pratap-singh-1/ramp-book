@@ -3,7 +3,7 @@ import enum
 import datetime
 from sqlalchemy import String, Float, Enum as SAEnum, ForeignKey, DateTime, CheckConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from entities.base import Base, TimestampMixin
+from src.entities.base import Base, TimestampMixin
 
 
 class ReservationStatus(str, enum.Enum):

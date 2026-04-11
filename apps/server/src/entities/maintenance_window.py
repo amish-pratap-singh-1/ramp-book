@@ -2,7 +2,7 @@
 import datetime
 from sqlalchemy import Text, ForeignKey, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from entities.base import Base, TimestampMixin
+from src.entities.base import Base, TimestampMixin
 
 
 class MaintenanceWindow(TimestampMixin, Base):

@@ -2,7 +2,7 @@
 import enum
 from sqlalchemy import String, Float, Enum as SAEnum, ForeignKey, Integer, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from entities.base import Base, TimestampMixin
+from src.entities.base import Base, TimestampMixin
 
 
 class AircraftStatus(str, enum.Enum):

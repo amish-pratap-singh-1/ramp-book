@@ -1,8 +1,11 @@
 [project]
-name = "server"
+name = "src"
 version = "0.1.0"
-requires-python = ">=3.10"
-
+description = ""
+authors = [
+    {name = "amish-pratap-singh-1",email = "amishpratapsingh13@gmail.com"}
+]
+requires-python = ">=3.13"
 dependencies = [
     "fastapi",
     "uvicorn[standard]",
@@ -11,4 +14,16 @@ dependencies = [
     "asyncpg",
     "pydantic-settings",
     "psycopg2-binary"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[dependency-groups]
+dev = [
+    "pytest (>=9.0.3,<10.0.0)",
+    "black (>=26.3.1,<27.0.0)",
+    "isort (>=8.0.1,<9.0.0)"
 ]

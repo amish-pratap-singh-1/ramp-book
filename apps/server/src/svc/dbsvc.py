@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
     AsyncSession,
 )
-from svc.secsvc import SecSvc
+from src.svc.secsvc import SecSvc
 
 
 class DbSvc:

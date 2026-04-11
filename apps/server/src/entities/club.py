@@ -1,7 +1,7 @@
 # entities/club.py
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from entities.base import Base
+from src.entities.base import Base
 
 
 class Club(Base):
