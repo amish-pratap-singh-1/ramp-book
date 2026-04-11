@@ -1,4 +1,5 @@
 """Authentication decorator"""
+
 import functools
 import inspect
 from typing import Callable

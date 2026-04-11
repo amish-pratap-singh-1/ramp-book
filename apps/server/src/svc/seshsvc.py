@@ -1,5 +1,7 @@
 """Module for session management"""
+
 import logging
+
 from src.repositories.users import UserRepository
 from src.schemas.auth import LoginRequest, TokenResponse
 from src.svc.errsvc import InvalidCredentialsError
