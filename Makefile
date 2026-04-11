@@ -79,3 +79,7 @@ run-fe:
 
 build-fe:
 	cd $(CLIENT_DIR) && pnpm run build
+
+# db
+run-db:
+	docker compose up postgres

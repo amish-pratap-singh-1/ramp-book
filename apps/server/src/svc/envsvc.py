@@ -22,9 +22,7 @@ class AppEnv(BaseSettings):
     Application configuration loaded from .env file.
     """
 
-    model_config = SettingsConfigDict(
-        env_file=find_env_file(), extra="ignore"
-    )
+    model_config = SettingsConfigDict(env_file=find_env_file(), extra="ignore")
 
     # App DB config
     app_db: str
