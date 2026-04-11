@@ -118,6 +118,8 @@ class AuthSvc:
         """
         payload = self.decode_token(token)
         role = payload.get("role")
+        if not allowed_roles:
+            return payload
         if role not in allowed_roles:
             raise InsufficientRoleError()
         return payload

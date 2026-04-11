@@ -29,10 +29,8 @@ def protected(*roles: UserRole):
         ):
             try:
                 token = credentials.credentials
-                if role_values:
-                    payload = auth_svc.auth(token, *role_values)
-                else:
-                    payload = auth_svc.decode_token(token)
+                payload = auth_svc.auth(token, *role_values)
+
             except InvalidTokenError:
                 return JSONResponse(
                     status_code=401,
