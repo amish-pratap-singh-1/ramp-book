@@ -1,3 +1,5 @@
+"""Module to setup logger"""
+
 import logging
 import sys
 
@@ -5,6 +7,8 @@ from src.svc.secsvc import SecSvc
 
 
 class LogSvc:
+    """Class for setting up logger"""
+
     _loggers: dict[str, "LogSvc"] = {}
 
     def __new__(cls, name: str):

@@ -1,3 +1,5 @@
+"""Fastapi app"""
+
 from fastapi import FastAPI
 
 from src.api.auth import router as auth_router

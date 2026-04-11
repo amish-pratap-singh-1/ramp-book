@@ -1,4 +1,5 @@
-# entities/reservation.py
+"""Reservation Entity"""
+
 import datetime
 import enum
 
@@ -11,12 +12,16 @@ from src.entities.base import Base, TimestampMixin
 
 
 class ReservationStatus(str, enum.Enum):
-    confirmed = "confirmed"
-    cancelled = "cancelled"
-    completed = "completed"  # flight happened, Hobbs logged
+    """Reservation status enum"""
+
+    CONFIRMED = "confirmed"
+    CANCELLED = "cancelled"
+    COMPLETED = "completed"
 
 
 class Reservation(TimestampMixin, Base):
+    """Reservation entity"""
+
     __tablename__ = "reservations"
 
     __table_args__ = (
@@ -44,7 +49,8 @@ class Reservation(TimestampMixin, Base):
         ForeignKey("users.id"), nullable=True, index=True
     )
 
-    # Always store as UTC in the DB — display in club's local timezone on the frontend
+    # Always store as UTC in the DB — display in club's local timezone on the
+    # frontend
     start_time: Mapped[datetime.datetime] = mapped_column(
         DateTime(timezone=True), nullable=False
     )
@@ -55,7 +61,7 @@ class Reservation(TimestampMixin, Base):
     status: Mapped[ReservationStatus] = mapped_column(
         SAEnum(ReservationStatus),
         nullable=False,
-        default=ReservationStatus.confirmed,
+        default=ReservationStatus.CONFIRMED,
     )
 
     # Filled in when member completes the flight

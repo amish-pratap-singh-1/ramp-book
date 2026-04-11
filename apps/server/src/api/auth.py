@@ -1,3 +1,5 @@
+"""Authentication api"""
+
 from fastapi import APIRouter
 
 from src.schemas.auth import LoginRequest, TokenResponse
@@ -10,4 +12,5 @@ sesh_svc = SeshSvc()
 
 @router.post("/auth/login", response_model=TokenResponse)
 async def login(req: LoginRequest) -> TokenResponse:
+    """Login api"""
     return await sesh_svc.login(req)

@@ -1,3 +1,5 @@
+"""User repository"""
+
 from typing import Optional
 
 from sqlalchemy import select
@@ -16,9 +18,11 @@ class UserRepository:
         self.db_svc = DbSvc()
 
     async def get_session(self) -> AsyncSession:
+        """get db session"""
         return self.db_svc.get_sessionmaker()()
 
     async def get_by_email(self, email: str) -> Optional[User]:
+        """get user by email"""
         async with self.db_svc.get_sessionmaker()() as session:
             result = await session.execute(
                 select(User).where(User.email == email)
@@ -26,6 +30,7 @@ class UserRepository:
             return result.scalar_one_or_none()
 
     async def get_by_id(self, user_id: int) -> Optional[User]:
+        """get user by id"""
         async with self.db_svc.get_sessionmaker()() as session:
             result = await session.execute(
                 select(User).where(User.id == user_id)

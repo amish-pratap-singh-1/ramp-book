@@ -89,6 +89,7 @@ class SecSvc:
 
 
 class AuthSvc:
+    """Authentication service"""
 
     def __init__(self):
         self.sec_svc = SecSvc()

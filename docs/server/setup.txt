@@ -34,3 +34,7 @@ poetry run uvicorn src.api.main:app --reload
 poetry run alembic revision --autogenerate -m "init"
 
 poetry run python scripts/seed.py
+
+poetry run pycodestyle src
+
+poetry run pylint src

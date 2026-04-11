@@ -1,4 +1,5 @@
-# entities/aircraft.py
+"""Aircraft Entity"""
+
 import enum
 
 from sqlalchemy import Enum as SAEnum
@@ -9,12 +10,16 @@ from src.entities.base import Base, TimestampMixin
 
 
 class AircraftStatus(str, enum.Enum):
-    available = "available"
-    maintenance = "maintenance"
-    retired = "retired"
+    """Status enum"""
+
+    AVAILABLE = "available"
+    MAINTENANCE = "maintenance"
+    RETIRED = "retired"
 
 
 class Aircraft(TimestampMixin, Base):
+    """Aircraft entity"""
+
     __tablename__ = "aircraft"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
@@ -36,7 +41,7 @@ class Aircraft(TimestampMixin, Base):
     status: Mapped[AircraftStatus] = mapped_column(
         SAEnum(AircraftStatus),
         nullable=False,
-        default=AircraftStatus.available,
+        default=AircraftStatus.AVAILABLE,
     )
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
 

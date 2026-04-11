@@ -1,4 +1,5 @@
-# entities/maintenance_window.py
+"""Maintenance window entity"""
+
 import datetime
 
 from sqlalchemy import DateTime, ForeignKey, Text
@@ -8,6 +9,8 @@ from src.entities.base import Base, TimestampMixin
 
 
 class MaintenanceWindow(TimestampMixin, Base):
+    """Maintenance window entity"""
+
     __tablename__ = "maintenance_windows"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)

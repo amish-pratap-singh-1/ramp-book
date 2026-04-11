@@ -1,3 +1,5 @@
+"""Root module init"""
+
 from src.entities.aircraft import Aircraft
 from src.entities.base import Base
 from src.entities.club import Club

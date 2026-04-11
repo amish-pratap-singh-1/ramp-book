@@ -1,4 +1,5 @@
-# entities/club.py
+"""Club Entity"""
+
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -6,6 +7,8 @@ from src.entities.base import Base
 
 
 class Club(Base):
+    """Club entity"""
+
     __tablename__ = "clubs"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)

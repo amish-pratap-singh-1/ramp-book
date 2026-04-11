@@ -1,4 +1,5 @@
-# entities/user.py
+"""User entity"""
+
 import enum
 
 from sqlalchemy import Enum as SAEnum
@@ -9,19 +10,25 @@ from src.entities.base import Base, TimestampMixin
 
 
 class UserRole(str, enum.Enum):
-    member = "member"
-    instructor = "instructor"
-    admin = "admin"
+    """User role"""
+
+    MEMBER = "member"
+    INSTRUCTOR = "instructor"
+    ADMIN = "admin"
 
 
 class CertificateType(str, enum.Enum):
-    student = "Student"
-    private = "Private"
-    commercial = "Commercial"
-    atp = "ATP"
+    """certificate type"""
+
+    STUDENT = "Student"
+    PRIVATE = "Private"
+    COMMERCIAL = "Commercial"
+    ATP = "ATP"
 
 
 class User(TimestampMixin, Base):
+    """User entity"""
+
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
@@ -44,11 +51,7 @@ class User(TimestampMixin, Base):
         SAEnum(CertificateType), nullable=True
     )
 
-    # Instructor-specific ratings stored as plain text array via association table (see InstructorRating)
-    # Or simpler: store as comma-separated string for MVP
-    ratings: Mapped[str | None] = mapped_column(
-        String(100), nullable=True
-    )  # e.g. "CFI,CFII,MEI"
+    ratings: Mapped[str | None] = mapped_column(String(100), nullable=True)
 
     is_active: Mapped[bool] = mapped_column(default=True, nullable=False)
 
