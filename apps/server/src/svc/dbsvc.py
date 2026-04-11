@@ -4,7 +4,8 @@ Database Service Module
 
 from typing import AsyncGenerator
 
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import (AsyncSession, async_sessionmaker,
+                                    create_async_engine)
 
 from src.svc.secsvc import SecSvc
 
@@ -33,7 +34,6 @@ class DbSvc:
 
         self._engine = create_async_engine(
             url,
-            echo=True,
             pool_pre_ping=True,
         )
 

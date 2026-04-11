@@ -9,6 +9,7 @@ import bcrypt
 from jose import JWTError, jwt
 
 from src.svc.envsvc import AppEnv
+from src.svc.errsvc import InsufficientRoleError, InvalidTokenError
 
 
 class SecSvc:
@@ -41,7 +42,9 @@ class SecSvc:
 
     def hash_password(self, plain: str) -> str:
         """Method to hash password"""
-        return bcrypt.hashpw(plain.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+        return bcrypt.hashpw(plain.encode("utf-8"), bcrypt.gensalt()).decode(
+            "utf-8"
+        )
 
     def verify_password(self, plain: str, hashed: str) -> bool:
         """Method to verify password"""
@@ -54,8 +57,11 @@ class SecSvc:
         expires_seconds: Optional[int] = None,
     ) -> str:
         """Method to create access token"""
-        expire = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(
-            seconds=expires_seconds or self._settings.access_token_expire_seconds
+        expire = datetime.datetime.now(
+            datetime.timezone.utc
+        ) + datetime.timedelta(
+            seconds=expires_seconds
+            or self._settings.access_token_expire_seconds
         )
         payload = {
             "sub": str(user_id),
@@ -81,24 +87,36 @@ class SecSvc:
             algorithms=[self._settings.algorithm],
         )
 
-    def get_user_id_from_token(self, token: str) -> int:
-        """
-        Convenience method — decode token and return user_id as int.
-        Raises JWTError if invalid.
-        """
-        payload = self.decode_access_token(token)
-        sub = payload.get("sub")
-        if sub is None:
-            raise JWTError("Token missing subject")
-        return int(sub)
 
-    def get_role_from_token(self, token: str) -> str:
+class AuthSvc:
+
+    def __init__(self):
+        self.sec_svc = SecSvc()
+
+    def decode_token(self, token: str) -> dict:
         """
-        Convenience method — decode token and return role string.
-        Raises JWTError if invalid.
+        Decode and validate a JWT. Returns the payload dict.
+        Raises TokenInvalidError on any failure.
         """
-        payload = self.decode_access_token(token)
+        try:
+            return self.sec_svc.decode_access_token(token)
+        except JWTError as e:
+            raise InvalidTokenError() from e
+
+    def auth(self, token: str, *allowed_roles: str) -> dict:
+        """
+        Verify token AND assert the caller's role is in allowed_roles.
+
+        Returns the full payload so you can extract user_id etc. in one call:
+            payload = auth.require_role(token, "admin", "moderator")
+            user_id = int(payload["sub"])
+
+        Raises:
+            TokenInvalidError     – bad / expired token
+            InsufficientRoleError – token valid but role not permitted
+        """
+        payload = self.decode_token(token)
         role = payload.get("role")
-        if role is None:
-            raise JWTError("Token missing role")
-        return role
+        if role not in allowed_roles:
+            raise InsufficientRoleError()
+        return payload

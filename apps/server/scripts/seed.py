@@ -3,22 +3,14 @@ Quick seed script — inserts one club, one member, one instructor, one admin.
 Run with: poetry run seed
 """
 
-from src.entities.aircraft import Aircraft
-from src.entities.club import Club
-from src.entities.maintenance_window import MaintenanceWindow
-from src.entities.reservation import Reservation
-from src.entities.user import CertificateType, User, UserRole
-from src.svc.dbsvc import DbSvc
-from src.svc.secsvc import SecSvc
-
-__all__ = [
-    "Aircraft",
-    "Reservation",
-    "MaintenanceWindow",
-]
 import asyncio
 import sys
 from pathlib import Path
+
+from src.entities.club import Club
+from src.entities.user import CertificateType, User, UserRole
+from src.svc.dbsvc import DbSvc
+from src.svc.secsvc import SecSvc
 
 sys.path.append(str(Path(__file__).parent.parent))
 

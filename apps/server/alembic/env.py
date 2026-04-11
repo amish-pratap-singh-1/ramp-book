@@ -3,22 +3,9 @@ from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
 
 from alembic import context
-from src.entities.aircraft import Aircraft
 from src.entities.base import Base
-from src.entities.club import Club
-from src.entities.maintenance_window import MaintenanceWindow
-from src.entities.reservation import Reservation
-from src.entities.user import User
 from src.svc.secsvc import SecSvc
 
-__all__ = [
-    "Base",
-    "Club",
-    "User",
-    "Aircraft",
-    "Reservation",
-    "MaintenanceWindow",
-]
 setting = SecSvc().get_appenv()
 
 # pylint: disable=no-member
@@ -83,7 +70,9 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        context.configure(connection=connection, target_metadata=target_metadata)
+        context.configure(
+            connection=connection, target_metadata=target_metadata
+        )
 
         with context.begin_transaction():
             context.run_migrations()
