@@ -1,0 +1,16 @@
+Create a new Next.js app with page router for full control
+
+cd apps/client
+npx create-next-app@latest .
+
+Shared interface through open api 
+pnpm add -D openapi-typescript
+
+Axios client setup
+pnpm add -D axios
+
+Tanstack query 
+pnpm add @tanstack/react-query
+
+React hook form 
+pnpm add react-hook-form

@@ -57,6 +57,9 @@ clean:
 	rm -rf apps/server/.pytest_cache
 
 # currently being used
+# generate contract
+gen-ts:
+	cd $(CLIENT_DIR) && pnpm openapi-typescript http://localhost:8000/openapi.json -o src/api/schema.d.ts
 # be
 run-be:
 	poetry -C $(SERVER_DIR) run uvicorn src.api.main:app --reload
