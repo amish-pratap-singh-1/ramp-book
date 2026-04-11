@@ -1,13 +1,17 @@
 from logging.config import fileConfig
-import importlib
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
 from alembic import context
 from svc.secsvc import SecSvc
 from entities.base import Base
-importlib.import_module("entities.models")
-
+from entities.club import Club
+from entities.user import User
+from entities.aircraft import Aircraft
+from entities.reservation import Reservation
+from entities.maintenance_window import MaintenanceWindow
+__all__ = ["Base", "Club", "User", "Aircraft",
+           "Reservation", "MaintenanceWindow"]
 setting = SecSvc().get_appenv()
 
 # pylint: disable=no-member
