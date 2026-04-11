@@ -1,21 +1,11 @@
-import { Geist, Geist_Mono } from "next/font/google";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import { useEffect } from "react";
+import { useRouter } from "next/router";
+import { isAuthenticated } from "@/lib/auth";
 
 export default function Home() {
-  return (
-    <div className={`${geistSans.className} ${geistMono.className}`}>
-      <main className="">
-        <div>hello</div>
-      </main>
-    </div>
-  );
+  const router = useRouter();
+  useEffect(() => {
+    router.replace(isAuthenticated() ? "/dashboard" : "/login");
+  }, [router]);
+  return null;
 }

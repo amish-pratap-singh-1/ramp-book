@@ -5,7 +5,7 @@ from typing import Optional
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.entities.user import User
+from src.entities.user import User, UserRole
 from src.svc.dbsvc import DbSvc
 
 
@@ -36,3 +36,15 @@ class UserRepository:
                 select(User).where(User.id == user_id)
             )
             return result.scalar_one_or_none()
+
+    async def get_instructors(self, club_id: int) -> list[User]:
+        """get all active instructors for a club"""
+        async with self.db_svc.get_sessionmaker()() as session:
+            result = await session.execute(
+                select(User).where(
+                    User.club_id == club_id,
+                    User.role == UserRole.INSTRUCTOR,
+                    User.is_active.is_(True),
+                )
+            )
+            return list(result.scalars().all())
