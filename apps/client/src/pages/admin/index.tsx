@@ -10,16 +10,10 @@ import QueryBoundary from "@/components/QueryBoundary";
 import { adminApi } from "@/api/admin.api";
 import { useAircraft } from "@/hooks/useAircraft";
 import { isAuthenticated, getUserRole } from "@/lib/auth";
+import AircraftCalendar, { CalendarEvent, CalendarResource } from "@/components/AircraftCalendar";
+import { View } from "react-big-calendar";
 import type { components } from "@/api/schema";
-
-function fmt(iso: string) {
-  return new Date(iso).toLocaleString("en-US", {
-    month: "short", day: "numeric", hour: "numeric", minute: "2-digit",
-  });
-}
-function toLocal(iso: string) {
-  return new Date(iso).toISOString();
-}
+import { formatDateForInput, formatDateForAPI, formatDisplay } from "@/lib/date-utils";
 
 export default function AdminPage() {
   const router = useRouter();
@@ -27,6 +21,8 @@ export default function AdminPage() {
   const [tab, setTab] = useState<"reservations" | "maintenance" | "users">("reservations");
   const [showMaintForm, setShowMaintForm] = useState(false);
   const [showUserForm, setShowUserForm] = useState(false);
+  const [currentDate, setCurrentDate] = useState<Date>(new Date());
+  const [currentView, setCurrentView] = useState<View>("day");
 
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -109,12 +105,53 @@ export default function AdminPage() {
   const adminLoading = resLoading || maintLoading || usersLoading;
   const adminData = reservationsData && maintenanceData && usersData;
 
+  const { data: allResData } = useQuery({
+    queryKey: ["admin_all_reservations"],
+    queryFn: () => adminApi.allReservations(),
+    enabled: tab === "maintenance",
+  });
+  const allReservations = allResData?.reservations ?? [];
+
+  const calendarEvents: CalendarEvent[] = [
+    ...allReservations.map(r => ({
+      id: `res-${r.id}`,
+      title: `${r.member?.full_name ?? "Member"}`,
+      start: new Date(r.start_time),
+      end: new Date(r.end_time),
+      type: "reservation" as const,
+      resourceId: r.aircraft_id,
+    })),
+    ...maintenance.map(m => ({
+      id: `maint-${m.id}`,
+      title: m.reason || "Maintenance",
+      start: new Date(m.start_time),
+      end: new Date(m.end_time),
+      type: "maintenance" as const,
+      resourceId: m.aircraft_id,
+    }))
+  ];
+
+  const calendarResources: CalendarResource[] = aircraft.map(a => ({
+    id: a.id,
+    title: a.tail_number,
+  }));
+
+  const handleSelectSlot = (slotInfo: any) => {
+    setShowMaintForm(true);
+    reset({
+      aircraft_id: slotInfo.resourceId?.toString() ?? "",
+      start_time: formatDateForInput(slotInfo.start),
+      end_time: formatDateForInput(slotInfo.end),
+      reason: "",
+    });
+  };
+
   const onSubmit = (data: { aircraft_id: string; start_time: string; end_time: string; reason: string }) => {
     createMaint.mutate({
       maintenance_window: {
         aircraft_id: parseInt(data.aircraft_id),
-        start_time: toLocal(data.start_time),
-        end_time: toLocal(data.end_time),
+        start_time: formatDateForAPI(data.start_time)!,
+        end_time: formatDateForAPI(data.end_time)!,
         reason: data.reason || undefined,
       }
     });
@@ -178,7 +215,7 @@ export default function AdminPage() {
                           <td><span className="font-bold text-accent font-mono">{r.aircraft?.tail_number}</span></td>
                           <td>{r.member?.full_name}</td>
                           <td className="text-secondary">{r.instructor?.full_name ?? "—"}</td>
-                          <td>{fmt(r.start_time)}</td>
+                          <td>{formatDisplay(r.start_time, "MMM d, h:mm a")}</td>
                           <td><StatusBadge status={r.status} /></td>
                         </tr>
                       ))
@@ -223,6 +260,7 @@ export default function AdminPage() {
                         <input type="text" {...register("reason")} placeholder="e.g. 100-hour inspection" className="input" />
                       </div>
                       <div className="flex justify-end gap-3 mt-2">
+                        <button type="button" onClick={() => setShowMaintForm(false)} className="btn-ghost">Cancel</button>
                         <button type="submit" disabled={createMaint.isPending} className="btn-primary">
                           {createMaint.isPending ? "Saving…" : "Save"}
                         </button>
@@ -230,6 +268,24 @@ export default function AdminPage() {
                     </form>
                   </div>
                 )}
+
+                <div className="bg-surface border border-edge rounded-2xl p-5 shadow-xl">
+                  <div className="mb-4">
+                    <h2 className="text-xl font-bold">Fleet Maintenance Schedule</h2>
+                    <p className="text-secondary text-sm">View and manage technical windows across all aircraft</p>
+                  </div>
+                  <AircraftCalendar
+                    events={calendarEvents}
+                    resources={calendarResources}
+                    date={currentDate}
+                    onDateChange={setCurrentDate}
+                    view={currentView}
+                    onViewChange={setCurrentView}
+                    onSelectSlot={handleSelectSlot}
+                    isLoading={maintLoading}
+                  />
+                </div>
+
 
                 <div className="tbl-wrap">
                   <table className="tbl">
@@ -251,8 +307,8 @@ export default function AdminPage() {
                           return (
                             <tr key={m.id}>
                               <td><span className="font-bold text-warn font-mono">{ac?.tail_number ?? m.aircraft_id}</span></td>
-                              <td>{fmt(m.start_time)}</td>
-                              <td>{fmt(m.end_time)}</td>
+                              <td>{formatDisplay(m.start_time, "MMM d, h:mm a")}</td>
+                              <td>{formatDisplay(m.end_time, "MMM d, h:mm a")}</td>
                               <td>{m.reason || "—"}</td>
                               <td>
                                 <button

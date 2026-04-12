@@ -3,9 +3,8 @@ import { useRouter } from "next/router";
 import Head from "next/head";
 import { useForm } from "react-hook-form";
 import { useQuery } from "@tanstack/react-query";
-import { Calendar, dateFnsLocalizer, SlotInfo, View } from "react-big-calendar";
-import { format, parse, startOfWeek, getDay } from "date-fns";
-import { enUS } from "date-fns/locale";
+import { View, SlotInfo } from "react-big-calendar";
+import { formatDateForAPI, formatDisplay } from "@/lib/date-utils";
 
 import Layout from "@/components/Layout";
 import LoadingSpinner from "@/components/LoadingSpinner";
@@ -16,14 +15,8 @@ import { useInstructors } from "@/hooks/useInstructors";
 import { isAuthenticated } from "@/lib/auth";
 import { aircraftApi } from "@/api/aircraft.api";
 import type { components } from "@/api/schema";
+import AircraftCalendar, { CalendarEvent } from "@/components/AircraftCalendar";
 
-const localizer = dateFnsLocalizer({
-  format,
-  parse,
-  startOfWeek,
-  getDay,
-  locales: { "en-US": enUS },
-});
 
 export default function NewReservationPage() {
   const router = useRouter();
@@ -60,16 +53,14 @@ export default function NewReservationPage() {
     enabled: !!selectedAircraft,
   });
 
-  // Removed manual acLoading check, handled by QueryBoundary below
-
   const onSubmit = (values: { instructor_id: string; notes: string }) => {
     if (!draftSlot || !selectedAircraft) return;
     const payload: components["schemas"]["ReservationCreateRequest"] = {
       reservation: {
         aircraft_id: parseInt(selectedAircraft),
         instructor_id: values.instructor_id ? parseInt(values.instructor_id) : undefined,
-        start_time: draftSlot.start.toISOString(),
-        end_time: draftSlot.end.toISOString(),
+        start_time: formatDateForAPI(draftSlot.start.toISOString())!,
+        end_time: formatDateForAPI(draftSlot.end.toISOString())!,
         notes: values.notes || undefined,
       }
     };
@@ -82,13 +73,12 @@ export default function NewReservationPage() {
 
   const available = aircraft.filter((a) => a.status === "available");
 
-  const events = schedule.map((s) => ({
+  const events: CalendarEvent[] = schedule.map((s) => ({
     id: `${s.type}-${s.id}`,
     title: s.type === "maintenance" ? "Maintenance" : "Reserved",
     start: new Date(s.start_time),
     end: new Date(s.end_time),
-    isDraft: false,
-    type: s.type,
+    type: s.type as any,
   }));
 
   if (draftSlot) {
@@ -98,7 +88,7 @@ export default function NewReservationPage() {
       start: draftSlot.start,
       end: draftSlot.end,
       isDraft: true,
-    } as any);
+    });
   }
 
   const handleSelectSlot = (slotInfo: SlotInfo) => {
@@ -112,26 +102,6 @@ export default function NewReservationPage() {
       return;
     }
     setDraftSlot({ start: slotInfo.start, end: slotInfo.end });
-  };
-
-  const eventPropGetter = (event: any) => {
-    if (event.isDraft) return { className: "rbc-slot-selection" };
-    
-    // Industry standard status colors natively handled through style properties
-    if (event.type === "maintenance") {
-      return { 
-        className: "rbc-event",
-        style: { backgroundColor: "#ef4444", borderColor: "#b91c1c", color: "#ffffff" } 
-      };
-    }
-    if (event.type === "reservation") {
-      return { 
-        className: "rbc-event",
-        style: { backgroundColor: "#38bdf8", borderColor: "#0284c7", color: "#ffffff" } 
-      };
-    }
-    
-    return { className: "rbc-event" };
   };
 
   return (
@@ -160,7 +130,7 @@ export default function NewReservationPage() {
                     onChange={(e) => {
                       setSelectedAircraft(e.target.value);
                       setDraftSlot(null);
-                      setCurrentDate(new Date()); // Reset the calendar when aircraft changes
+                      setCurrentDate(new Date()); 
                       setCurrentView("week");
                     }}
                     className="select-input max-w-sm"
@@ -175,29 +145,15 @@ export default function NewReservationPage() {
                 </div>
 
                 {selectedAircraft ? (
-                  <div className="h-[750px] mt-4 relative">
-                    {scheduleLoading && (
-                      <div className="absolute inset-0 bg-surface/50 z-10 flex items-center justify-center">
-                        <LoadingSpinner />
-                      </div>
-                    )}
-                    <Calendar
-                      localizer={localizer}
+                  <div className="mt-4">
+                    <AircraftCalendar
                       events={events}
-                      startAccessor="start"
-                      endAccessor="end"
                       date={currentDate}
-                      onNavigate={(date) => setCurrentDate(date)}
+                      onDateChange={setCurrentDate}
                       view={currentView}
-                      onView={(view) => setCurrentView(view)}
-                      views={["week", "day"]}
-                      selectable
+                      onViewChange={setCurrentView}
                       onSelectSlot={handleSelectSlot}
-                      eventPropGetter={eventPropGetter}
-                      step={30}
-                      timeslots={2}
-                      min={new Date(0, 0, 0, 6, 0, 0)} // Starts at 6 AM
-                      max={new Date(0, 0, 0, 22, 0, 0)} // Ends at 10 PM
+                      isLoading={scheduleLoading}
                     />
                   </div>
                 ) : (
@@ -206,6 +162,7 @@ export default function NewReservationPage() {
                   </div>
                 )}
               </div>
+
 
               <div className="w-full xl:w-96 flex-shrink-0">
                 <div className="card sticky top-24 shadow-2xl border-accent/20">
@@ -225,9 +182,9 @@ export default function NewReservationPage() {
                     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
                       <div className="bg-base p-4 rounded-xl border border-edge">
                         <div className="text-[10px] font-bold text-muted uppercase tracking-widest mb-2">Selected Window</div>
-                        <div className="text-primary font-bold text-lg mb-1">{format(draftSlot.start, "MMM do, yyyy")}</div>
+                        <div className="text-primary font-bold text-lg mb-1">{formatDisplay(draftSlot.start, "MMM do, yyyy")}</div>
                         <div className="text-secondary text-sm">
-                          {format(draftSlot.start, "h:mm a")} <span className="mx-2 text-muted">→</span> {format(draftSlot.end, "h:mm a")}
+                          {formatDisplay(draftSlot.start, "h:mm a")} <span className="mx-2 text-muted">→</span> {formatDisplay(draftSlot.end, "h:mm a")}
                         </div>
                       </div>
 
