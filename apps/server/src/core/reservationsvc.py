@@ -1,6 +1,7 @@
 """Reservation service module"""
 
 import logging
+from datetime import datetime, timezone
 
 from src.entities.reservation import Reservation, ReservationStatus
 from src.entities.user import UserRole
@@ -56,6 +57,10 @@ class ReservationSvc:
         self, user_id: int, club_id: int, data: ReservationCreate
     ) -> Reservation:
         """Create a reservation enforcing double-booking rules"""
+        # 0. Check if start time is in the past
+        if data.start_time < datetime.now(timezone.utc):
+            raise BadRequestError("Reservation start time cannot be in the past")
+
         # 1. Aircraft availability (also checks maintenance windows)
         aircraft_ok = await self.aircraft_repo.is_available(
             data.aircraft_id, data.start_time, data.end_time
@@ -118,6 +123,11 @@ class ReservationSvc:
         )
 
         if data.start_time or data.end_time:
+            if new_start < datetime.now(timezone.utc):
+                raise BadRequestError(
+                    "Reservation start time cannot be in the past"
+                )
+
             aircraft_ok = await self.aircraft_repo.is_available(
                 reservation.aircraft_id,
                 new_start,

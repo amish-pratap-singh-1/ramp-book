@@ -41,7 +41,7 @@ api.interceptors.response.use(
     }
     return response;
   },
-  async (error: AxiosError<{ message?: string }>) => {
+  async (error: AxiosError<{ message?: string; detail?: any }>) => {
     const config = error.config as InternalAxiosRequestConfig & {
       showToast?: boolean;
       errorMessage?: string;
@@ -49,9 +49,17 @@ api.interceptors.response.use(
 
     // Handle 401 specifically
     if (error.response?.status === 401) {
-      clearToken();
-      if (typeof window !== "undefined") {
-        window.location.href = "/login";
+      // Don't redirect if we're trying to login or already on the login page
+      const isLoginRequest = config?.url?.includes("/auth/login");
+      const isLoginPage = typeof window !== "undefined" && window.location.pathname === "/login";
+
+      if (!isLoginRequest && !isLoginPage) {
+        clearToken();
+        if (typeof window !== "undefined") {
+          window.location.href = "/login";
+        }
+      } else if (config?.showToast !== false) {
+        toast.error(config?.errorMessage || "Invalid email or password");
       }
       return Promise.reject(error);
     }
@@ -76,6 +84,22 @@ api.interceptors.response.use(
               break;
             case 404:
               message = "The requested resource was not found.";
+              break;
+            case 422:
+              // Handle FastAPI validation errors
+              const detail = error.response?.data?.detail;
+              if (Array.isArray(detail)) {
+                message = detail
+                  .map((err: any) => {
+                    const path = err.loc ? err.loc.join(".") : "";
+                    return `${path}: ${err.msg}`;
+                  })
+                  .join(", ");
+              } else if (typeof detail === "string") {
+                message = detail;
+              } else {
+                message = "Validation error. Please check your data.";
+              }
               break;
             case 500:
               message = "A server error occurred. Please try again later.";

@@ -1,4 +1,5 @@
 import { useForm } from "react-hook-form";
+import type { AxiosError } from "axios";
 import { components } from "@/api/schema";
 import { useLogin } from "@/hooks/useLogin";
 import Head from "next/head";
@@ -6,13 +7,12 @@ import Head from "next/head";
 type LoginRequest = components["schemas"]["LoginRequest"];
 
 export default function LoginPage() {
-  const { register, handleSubmit } = useForm<LoginRequest>();
+  const { register, handleSubmit, formState: { errors } } = useForm<LoginRequest>();
   const login = useLogin();
 
   const onSubmit = (data: LoginRequest) => login.mutate(data);
 
-  const apiError = (login.error as { response?: { data?: { detail?: string } } })
-    ?.response?.data?.detail;
+
 
   return (
     <>
@@ -48,31 +48,38 @@ export default function LoginPage() {
                 <label className="label" htmlFor="email">Email</label>
                 <input
                   id="email"
-                  {...register("user.email")}
+                  {...register("user.email", {
+                    required: "Email is required",
+                    pattern: {
+                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                      message: "Invalid email address"
+                    }
+                  })}
                   type="email"
                   placeholder="you@cedarvalleyfc.com"
-                  className="input"
+                  className={`input ${errors.user?.email ? 'border-danger' : ''}`}
                   autoComplete="email"
                 />
+                {errors.user?.email && (
+                  <p className="text-xs text-danger mt-1">{errors.user.email.message}</p>
+                )}
               </div>
 
               <div className="field">
                 <label className="label" htmlFor="password">Password</label>
                 <input
                   id="password"
-                  {...register("user.password")}
+                  {...register("user.password", { required: "Password is required" })}
                   type="password"
                   placeholder="••••••••"
-                  className="input"
+                  className={`input ${errors.user?.password ? 'border-danger' : ''}`}
                   autoComplete="current-password"
                 />
+                {errors.user?.password && (
+                  <p className="text-xs text-danger mt-1">{errors.user.password.message}</p>
+                )}
               </div>
 
-              {login.isError && (
-                <div className="bg-danger/10 border border-danger/20 rounded-xl px-4 py-3 text-sm text-danger">
-                  {apiError ?? "Invalid email or password"}
-                </div>
-              )}
 
               <button
                 type="submit"
