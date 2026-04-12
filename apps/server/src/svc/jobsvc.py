@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from sqlalchemy import create_engine, select
+from sqlalchemy import select
 
 from src.entities.aircraft import Aircraft
 from src.schemas.maintenance import MaintenanceWindowCreate
@@ -66,7 +66,8 @@ class JobSvc:
     @staticmethod
     async def check_aircraft_maintenance() -> None:
         """
-        Scan all aircraft and create maintenance windows if they reached 100hr hobbs
+        Scan all aircraft and create maintenance windows if they reached
+        100hr hobbs
         """
         logger.info("Running automatic maintenance check...")
         db_svc = DbSvc()
@@ -84,7 +85,8 @@ class JobSvc:
                         >= aircraft.last_100hr_inspection_hobbs + 100
                     ):
                         logger.info(
-                            "Aircraft %s reached 100hr hobbs. Creating maintenance window.",
+                            "Aircraft %s reached 100hr hobbs. Creating "
+                            "maintenance window.",
                             aircraft.tail_number,
                         )
 
@@ -92,7 +94,9 @@ class JobSvc:
                         start_time = datetime.now()
                         end_time = start_time + timedelta(hours=48)
 
-                        # We use the AircraftSvc logic to handle reservation cancellations
+                        # We use the AircraftSvc logic to handle reservation
+                        # cancellations
+                        # pylint: disable=import-outside-toplevel
                         from src.core.aircraftsvc import AircraftSvc
 
                         svc = AircraftSvc()
@@ -106,7 +110,8 @@ class JobSvc:
                             ),
                         )
 
-                        # Update last inspection hobbs to the current major interval
+                        # Update last inspection hobbs to the current major
+                        #  interval
                         new_last = (
                             int(aircraft.total_hobbs_hours / 100) * 100.0
                         )
@@ -116,5 +121,5 @@ class JobSvc:
                 await session.commit()
                 logger.info("Maintenance check completed.")
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             logger.error("Error in check_aircraft_maintenance job: %s", str(e))

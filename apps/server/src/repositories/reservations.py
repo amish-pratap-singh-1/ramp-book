@@ -9,8 +9,8 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import selectinload
 
 from src.entities.aircraft import Aircraft
-from src.entities.user import User
 from src.entities.reservation import Reservation, ReservationStatus
+from src.entities.user import User
 from src.schemas.reservation import ReservationCreate, ReservationUpdate
 from src.svc.dbsvc import DbSvc
 from src.svc.errsvc import ResourceNotFoundError
@@ -132,7 +132,9 @@ class ReservationRepository:
             async with self.db_svc.get_sessionmaker()() as session:
                 # 1. Verify Aircraft exists
                 if data.aircraft_id is not None:
-                    ac_stmt = select(Aircraft).where(Aircraft.id == data.aircraft_id)
+                    ac_stmt = select(Aircraft).where(
+                        Aircraft.id == data.aircraft_id
+                    )
                     ac_result = await session.execute(ac_stmt)
                     if not ac_result.scalar_one_or_none():
                         raise ResourceNotFoundError(
@@ -141,11 +143,14 @@ class ReservationRepository:
 
                 # 2. Verify Instructor exists (if provided)
                 if data.instructor_id is not None:
-                    inst_stmt = select(User).where(User.id == data.instructor_id)
+                    inst_stmt = select(User).where(
+                        User.id == data.instructor_id
+                    )
                     inst_result = await session.execute(inst_stmt)
                     if not inst_result.scalar_one_or_none():
                         raise ResourceNotFoundError(
-                            f"Instructor with ID {data.instructor_id} not found"
+                            f"Instructor with ID {data.instructor_id} "
+                            "not found"
                         )
 
                 reservation = Reservation(
@@ -280,13 +285,16 @@ class ReservationRepository:
 
                 # Update aircraft total hobbs hours
                 ac_result = await session.execute(
-                    select(Aircraft).where(Aircraft.id == reservation.aircraft_id)
+                    select(Aircraft).where(
+                        Aircraft.id == reservation.aircraft_id
+                    )
                 )
                 aircraft = ac_result.scalar_one_or_none()
                 if aircraft:
                     # Round to 2 decimal places to prevent floating-point drift
                     aircraft.total_hobbs_hours = round(
-                        aircraft.total_hobbs_hours + (hobbs_end - hobbs_start), 2
+                        aircraft.total_hobbs_hours + (hobbs_end - hobbs_start),
+                        2,
                     )
 
                 await session.commit()

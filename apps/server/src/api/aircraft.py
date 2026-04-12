@@ -35,9 +35,7 @@ async def list_aircraft(
         )
 
         return {
-            "aircraft": [
-                AircraftResponse.model_validate(a) for a in aircraft
-            ],
+            "aircraft": [AircraftResponse.model_validate(a) for a in aircraft],
             "pagination": {"page": page, "limit": limit, "total": total},
         }
     except Exception as e:

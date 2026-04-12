@@ -90,7 +90,9 @@ class MaintenanceRepository:
         """Create a maintenance window"""
         try:
             async with self.db_svc.get_sessionmaker()() as session:
-                window = MaintenanceWindow(club_id=club_id, **data.model_dump())
+                window = MaintenanceWindow(
+                    club_id=club_id, **data.model_dump()
+                )
                 session.add(window)
                 await session.commit()
                 await session.refresh(window)

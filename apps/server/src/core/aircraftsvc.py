@@ -60,11 +60,18 @@ class AircraftSvc:
         return aircraft
 
     async def list_maintenance(
-        self, club_id: int, page: int, limit: int, aircraft_id: int | None = None
+        self,
+        club_id: int,
+        page: int,
+        limit: int,
+        aircraft_id: int | None = None,
     ) -> tuple[list[MaintenanceWindow], int]:
-        """List maintenance windows for a club, optionally filtered by aircraft"""
+        """List maintenance windows for a club, optionally filtered by
+        aircraft"""
         if aircraft_id:
-            return await self.maint_repo.get_by_aircraft(aircraft_id, page, limit)
+            return await self.maint_repo.get_by_aircraft(
+                aircraft_id, page, limit
+            )
         return await self.maint_repo.get_all(club_id, page, limit)
 
     async def create_maintenance(

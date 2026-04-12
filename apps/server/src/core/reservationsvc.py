@@ -59,7 +59,9 @@ class ReservationSvc:
         """Create a reservation enforcing double-booking rules"""
         # 0. Check if start time is in the past
         if data.start_time < datetime.now(timezone.utc):
-            raise BadRequestError("Reservation start time cannot be in the past")
+            raise BadRequestError(
+                "Reservation start time cannot be in the past"
+            )
 
         # 1. Aircraft availability (also checks maintenance windows)
         aircraft_ok = await self.aircraft_repo.is_available(

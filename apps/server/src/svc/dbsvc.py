@@ -4,11 +4,10 @@ Database Service Module
 
 from typing import AsyncGenerator
 
-from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from asyncpg.exceptions import UniqueViolationError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import (AsyncSession, async_sessionmaker,
                                     create_async_engine)
-import asyncpg
 
 from src.svc.errsvc import DatabaseError, DuplicateEntryError
 from src.svc.secsvc import SecSvc
@@ -69,11 +68,13 @@ class DbSvc:
         if isinstance(e, IntegrityError):
             # SQLAlchemy wraps the driver's exception in e.orig
             orig = getattr(e, "orig", None)
-            
+
             # Check for unique violation (Postgres SQLSTATE 23505)
             # Check by instance type OR by SQLSTATE code for robustness
-            if isinstance(orig, UniqueViolationError) or \
-               getattr(orig, "sqlstate", None) == "23505":
+            if (
+                isinstance(orig, UniqueViolationError)
+                or getattr(orig, "sqlstate", None) == "23505"
+            ):
                 raise DuplicateEntryError(
                     detail="A record with this value already exists"
                 ) from e

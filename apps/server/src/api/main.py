@@ -1,6 +1,7 @@
 """Fastapi app"""
 
 from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -15,7 +16,7 @@ from src.svc.jobsvc import JobSvc
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(_app: FastAPI):
     """Lifecycle events for the FastAPI application"""
     # Startup
     JobSvc().start()

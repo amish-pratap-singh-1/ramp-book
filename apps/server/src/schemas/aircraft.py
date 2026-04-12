@@ -24,7 +24,9 @@ class AircraftCreate(BaseModel):
         """Round to 2 decimals"""
         self.hourly_rate_usd = round(self.hourly_rate_usd, 2)
         self.total_hobbs_hours = round(self.total_hobbs_hours, 2)
-        self.last_100hr_inspection_hobbs = round(self.last_100hr_inspection_hobbs, 2)
+        self.last_100hr_inspection_hobbs = round(
+            self.last_100hr_inspection_hobbs, 2
+        )
         return self
 
 
@@ -53,7 +55,9 @@ class AircraftUpdate(BaseModel):
         if self.total_hobbs_hours is not None:
             self.total_hobbs_hours = round(self.total_hobbs_hours, 2)
         if self.last_100hr_inspection_hobbs is not None:
-            self.last_100hr_inspection_hobbs = round(self.last_100hr_inspection_hobbs, 2)
+            self.last_100hr_inspection_hobbs = round(
+                self.last_100hr_inspection_hobbs, 2
+            )
         return self
 
 
