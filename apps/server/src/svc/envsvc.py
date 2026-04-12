@@ -51,3 +51,17 @@ class AppEnv(BaseSettings):
             f"{self.db_port}/"
             f"{self.app_db}"
         )
+
+    @property
+    def sync_database_url(self) -> str:
+        """
+        Construct sync SQLAlchemy database URL.
+        """
+        return (
+            f"postgresql://"
+            f"{self.app_user}:"
+            f"{self.app_password}@"
+            f"{self.db_host}:"
+            f"{self.db_port}/"
+            f"{self.app_db}"
+        )

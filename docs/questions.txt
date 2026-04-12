@@ -16,3 +16,11 @@ q4. what is CBTA-based Grading?
 
 q5. what are other maintenance windows except 100 hr inspections?
 
+q6. Hobbs is how many decimal places
+    - mostly one decimal place (sometimes two)
+
+q7. How long is a flight booking slot
+    - mostly 2 or 3 hours 
+    - more then 3 requires approval
+    - overnight requires approval
+    - multi day flight required approval

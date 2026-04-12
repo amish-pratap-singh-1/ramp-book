@@ -37,6 +37,9 @@ class Aircraft(TimestampMixin, Base):
     total_hobbs_hours: Mapped[float] = mapped_column(
         Float, nullable=False, default=0.0
     )
+    last_100hr_inspection_hobbs: Mapped[float] = mapped_column(
+        Float, nullable=False, default=0.0
+    )
 
     status: Mapped[AircraftStatus] = mapped_column(
         SAEnum(AircraftStatus),

@@ -218,6 +218,46 @@ class ReservationRepository:
         except SQLAlchemyError as e:
             self.db_svc.handle_db_error(e)
 
+    async def cancel_overlapping_reservations(
+        self,
+        aircraft_id: int,
+        start_time: datetime.datetime,
+        end_time: datetime.datetime,
+    ) -> int:
+        """Cancel all confirmed reservations for an aircraft in a time window.
+        Returns the number of cancelled reservations.
+        """
+        try:
+            async with self.db_svc.get_sessionmaker()() as session:
+                # Find confirmed reservations that overlap with the window
+                stmt = select(Reservation).where(
+                    and_(
+                        Reservation.aircraft_id == aircraft_id,
+                        Reservation.status == ReservationStatus.CONFIRMED,
+                        Reservation.start_time < end_time,
+                        Reservation.end_time > start_time,
+                    )
+                )
+                result = await session.execute(stmt)
+                reservations = result.scalars().all()
+
+                count = 0
+                for res in reservations:
+                    res.status = ReservationStatus.CANCELLED
+                    count += 1
+
+                if count > 0:
+                    await session.commit()
+                    logger.info(
+                        "Cancelled %d reservations due to maintenance on "
+                        "aircraft %d",
+                        count,
+                        aircraft_id,
+                    )
+                return count
+        except SQLAlchemyError as e:
+            self.db_svc.handle_db_error(e)
+
     async def complete(
         self,
         reservation_id: int,

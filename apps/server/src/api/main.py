@@ -1,5 +1,6 @@
 """Fastapi app"""
 
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -10,8 +11,20 @@ from src.api.health import router as health_router
 from src.api.reservations import router as reservations_router
 from src.api.users import router as users_router
 from src.svc.errsvc import AppError, ErrSvc
+from src.svc.jobsvc import JobSvc
 
-app = FastAPI(redoc_url=None)
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Lifecycle events for the FastAPI application"""
+    # Startup
+    JobSvc().start()
+    yield
+    # Shutdown
+    JobSvc().shutdown()
+
+
+app = FastAPI(redoc_url=None, lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,

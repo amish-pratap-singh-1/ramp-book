@@ -16,6 +16,7 @@ class AircraftCreate(BaseModel):
     year: int
     hourly_rate_usd: float
     total_hobbs_hours: float = 0.0
+    last_100hr_inspection_hobbs: float = 0.0
     notes: Optional[str] = None
 
     @model_validator(mode="after")
@@ -23,6 +24,7 @@ class AircraftCreate(BaseModel):
         """Round to 2 decimals"""
         self.hourly_rate_usd = round(self.hourly_rate_usd, 2)
         self.total_hobbs_hours = round(self.total_hobbs_hours, 2)
+        self.last_100hr_inspection_hobbs = round(self.last_100hr_inspection_hobbs, 2)
         return self
 
 
@@ -39,6 +41,7 @@ class AircraftUpdate(BaseModel):
     year: Optional[int] = None
     hourly_rate_usd: Optional[float] = None
     total_hobbs_hours: Optional[float] = None
+    last_100hr_inspection_hobbs: Optional[float] = None
     status: Optional[AircraftStatus] = None
     notes: Optional[str] = None
 
@@ -49,6 +52,8 @@ class AircraftUpdate(BaseModel):
             self.hourly_rate_usd = round(self.hourly_rate_usd, 2)
         if self.total_hobbs_hours is not None:
             self.total_hobbs_hours = round(self.total_hobbs_hours, 2)
+        if self.last_100hr_inspection_hobbs is not None:
+            self.last_100hr_inspection_hobbs = round(self.last_100hr_inspection_hobbs, 2)
         return self
 
 
@@ -68,6 +73,7 @@ class AircraftResponse(BaseModel):
     year: int
     hourly_rate_usd: float
     total_hobbs_hours: float
+    last_100hr_inspection_hobbs: float
     status: AircraftStatus
     notes: Optional[str] = None
 

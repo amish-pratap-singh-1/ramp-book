@@ -6,10 +6,11 @@ from src.entities.aircraft import Aircraft
 from src.entities.maintenance_window import MaintenanceWindow
 from src.repositories.aircraft import AircraftRepository
 from src.repositories.maintenance import MaintenanceRepository
+from src.repositories.reservations import ReservationRepository
 from src.schemas.aircraft import (AircraftCreate, AircraftScheduleItem,
                                   AircraftUpdate)
 from src.schemas.maintenance import MaintenanceWindowCreate
-from src.svc.errsvc import ResourceNotFoundError
+from src.svc.errsvc import BadRequestError, ResourceNotFoundError
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +21,7 @@ class AircraftSvc:
     def __init__(self):
         self.aircraft_repo = AircraftRepository()
         self.maint_repo = MaintenanceRepository()
+        self.res_repo = ReservationRepository()
 
     async def list_aircraft(
         self, club_id: int, page: int, limit: int
@@ -67,7 +69,21 @@ class AircraftSvc:
         self, club_id: int, data: MaintenanceWindowCreate
     ) -> MaintenanceWindow:
         """Create a maintenance window (admin only)"""
-        return await self.maint_repo.create(club_id, data)
+        # 1. Verify aircraft exists — user requested 404 -> 400 conversion here
+        try:
+            await self.get_aircraft(data.aircraft_id)
+        except ResourceNotFoundError as e:
+            raise BadRequestError(detail=e.detail) from e
+
+        # 2. Create the window
+        window = await self.maint_repo.create(club_id, data)
+
+        # 3. Automatically cancel overlapping reservations
+        await self.res_repo.cancel_overlapping_reservations(
+            data.aircraft_id, data.start_time, data.end_time
+        )
+
+        return window
 
     async def delete_maintenance(self, window_id: int) -> None:
         """Delete a maintenance window (admin only)"""

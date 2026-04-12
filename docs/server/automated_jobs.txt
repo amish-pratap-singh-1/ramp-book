@@ -1,0 +1,36 @@
+Automated Maintenance & Reminder Jobs
+
+1. 100-Hour Inspection
+   - Trigger: Aircraft reaches every 100 hours of Hobbs time (e.g., 100, 200, 300...).
+   - Action: Automatically create a Maintenance Window and cancel overlapping reservations.
+   - Frequency: Hourly check.
+
+2. Annual Inspection
+   - Trigger: 12 months since the last annual inspection date.
+   - Action: Create a Maintenance Window and notify admins 30 days in advance.
+   - Frequency: Daily check.
+
+3. 50-Hour Oil Change
+   - Trigger: Every 50 hours of Hobbs time.
+   - Action: Create a short maintenance window or alert mechanics.
+   - Frequency: Hourly check.
+
+4. ELT Battery Replacement
+   - Trigger: Expiration date of the ELT battery (usually every 12-24 months).
+   - Action: Alert admins and create a maintenance window.
+   - Frequency: Weekly check.
+
+5. Transponder / Altimeter Certification (91.411 & 91.413)
+   - Trigger: Every 24 calendar months.
+   - Action: Alert admins to schedule certification.
+   - Frequency: Monthly check.
+
+6. Insurance Policy Renewal
+   - Trigger: 30 days before the policy expiration date.
+   - Action: Notify club administrators.
+   - Frequency: Daily check.
+
+7. Member Medical / BFR Expiry
+   - Trigger: 30-60 days before a member's medical certificate or Biannual Flight Review (BFR) expires.
+   - Action: Email the member and restrict their ability to create new reservations if expired.
+   - Frequency: Daily check.
