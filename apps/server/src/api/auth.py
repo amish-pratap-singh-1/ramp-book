@@ -3,6 +3,7 @@
 from fastapi import APIRouter
 
 from src.schemas.auth import LoginRequest, TokenResponse
+from src.svc.errsvc import ErrSvc
 from src.svc.seshsvc import SeshSvc
 
 router = APIRouter(tags=["Auth"])
@@ -12,5 +13,8 @@ sesh_svc = SeshSvc()
 
 @router.post("/auth/login", response_model=TokenResponse)
 async def login(req: LoginRequest) -> TokenResponse:
-    """Login api"""
-    return await sesh_svc.login(req)
+    try:
+        """Login api"""
+        return await sesh_svc.login(req)
+    except Exception as e:
+        raise ErrSvc.handle_api_error(e)

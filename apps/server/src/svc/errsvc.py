@@ -176,6 +176,17 @@ class ErrSvc:
     """Class to handle errors"""
 
     @staticmethod
+    def handle_api_error(e: Exception) -> AppError:
+        """
+        Converts any exception to an AppError.
+        If it's already an AppError, returns it.
+        Otherwise, returns it as a generic AppError.
+        """
+        if isinstance(e, AppError):
+            return e
+        return AppError(detail=str(e))
+
+    @staticmethod
     async def app_error_handler(_: Request, exc: AppError) -> JSONResponse:
         """
         Central exception handler for all AppError subclasses.
