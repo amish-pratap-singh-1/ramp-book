@@ -2,19 +2,15 @@
 
 from fastapi import APIRouter, Query, Request
 
+from src.core.reservationsvc import ReservationSvc
+from src.core.usrsvc import UsrSvc
 from src.decorators.auth import protected
-from src.entities.reservation import ReservationStatus
-from src.entities.user import UserRole
-from src.schemas.reservation import (
-    FlightCompleteRequestWrapper,
-    ReservationCreateRequest,
-    ReservationListResponse,
-    ReservationResponse,
-    ReservationResponseWrapper,
-    ReservationUpdateRequest,
-)
-from src.svc.reservationsvc import ReservationSvc
-from src.svc.usrsvc import UsrSvc
+from src.schemas.reservation import (FlightCompleteRequestWrapper,
+                                     ReservationCreateRequest,
+                                     ReservationListResponse,
+                                     ReservationResponse,
+                                     ReservationResponseWrapper,
+                                     ReservationUpdateRequest)
 
 router = APIRouter(prefix="/reservations", tags=["Reservations"])
 
@@ -27,7 +23,7 @@ usr_svc = UsrSvc()
 async def list_reservations(
     request: Request,
     page: int = Query(1, ge=1),
-    limit: int = Query(20, ge=1, le=100)
+    limit: int = Query(20, ge=1, le=100),
 ) -> ReservationListResponse:
     """
     Admin → all reservations in the club.
@@ -43,12 +39,10 @@ async def list_reservations(
     )
 
     return {
-        "reservations": [ReservationResponse.model_validate(r) for r in reservations],
-        "pagination": {
-            "page": page,
-            "limit": limit,
-            "total": total
-        }
+        "reservations": [
+            ReservationResponse.model_validate(r) for r in reservations
+        ],
+        "pagination": {"page": page, "limit": limit, "total": total},
     }
 
 
@@ -86,12 +80,15 @@ async def create_reservation(
 async def update_reservation(
     reservation_id: int, req: ReservationUpdateRequest, request: Request
 ) -> ReservationResponseWrapper:
-    """Edit time window or instructor. Members can only edit their own confirmed reservations."""
+    """Edit time window or instructor. Members can only edit their own
+    confirmed reservations."""
     user_id = int(request.state.user["sub"])
     role = request.state.user["role"]
     data = req.reservation
 
-    updated = await res_svc.update_reservation(reservation_id, user_id, role, data)
+    updated = await res_svc.update_reservation(
+        reservation_id, user_id, role, data
+    )
     return {"reservation": ReservationResponse.model_validate(updated)}
 
 
@@ -108,7 +105,9 @@ async def cancel_reservation(
     return {"reservation": ReservationResponse.model_validate(cancelled)}
 
 
-@router.post("/{reservation_id}/complete", response_model=ReservationResponseWrapper)
+@router.post(
+    "/{reservation_id}/complete", response_model=ReservationResponseWrapper
+)
 @protected()
 async def complete_reservation(
     reservation_id: int, req: FlightCompleteRequestWrapper, request: Request

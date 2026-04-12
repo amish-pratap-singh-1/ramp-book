@@ -1,11 +1,9 @@
 """Maintenance window repository"""
 
-import datetime
 import logging
 from typing import Optional
 
-from sqlalchemy import and_, func, select
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import func, select
 
 from src.entities.maintenance_window import MaintenanceWindow
 from src.schemas.maintenance import MaintenanceWindowCreate
@@ -20,16 +18,25 @@ class MaintenanceRepository:
     def __init__(self):
         self.db_svc = DbSvc()
 
-    async def get_all(self, club_id: int, page: int = 1, limit: int = 20) -> tuple[list[MaintenanceWindow], int]:
+    async def get_all(
+        self, club_id: int, page: int = 1, limit: int = 20
+    ) -> tuple[list[MaintenanceWindow], int]:
         """Get all maintenance windows for a club with pagination"""
         async with self.db_svc.get_sessionmaker()() as session:
-            count_stmt = select(func.count()).select_from(MaintenanceWindow).where(MaintenanceWindow.club_id == club_id)
+            count_stmt = (
+                select(func.count())
+                .select_from(MaintenanceWindow)
+                .where(MaintenanceWindow.club_id == club_id)
+            )
             total = await session.scalar(count_stmt)
 
-            stmt = select(MaintenanceWindow).where(
-                MaintenanceWindow.club_id == club_id
-            ).offset((page - 1) * limit).limit(limit)
-            
+            stmt = (
+                select(MaintenanceWindow)
+                .where(MaintenanceWindow.club_id == club_id)
+                .offset((page - 1) * limit)
+                .limit(limit)
+            )
+
             result = await session.execute(stmt)
             return list(result.scalars().all()), total or 0
 
@@ -38,12 +45,19 @@ class MaintenanceRepository:
     ) -> tuple[list[MaintenanceWindow], int]:
         """Get maintenance windows for a specific aircraft with pagination"""
         async with self.db_svc.get_sessionmaker()() as session:
-            count_stmt = select(func.count()).select_from(MaintenanceWindow).where(MaintenanceWindow.aircraft_id == aircraft_id)
+            count_stmt = (
+                select(func.count())
+                .select_from(MaintenanceWindow)
+                .where(MaintenanceWindow.aircraft_id == aircraft_id)
+            )
             total = await session.scalar(count_stmt)
 
-            stmt = select(MaintenanceWindow).where(
-                MaintenanceWindow.aircraft_id == aircraft_id
-            ).offset((page - 1) * limit).limit(limit)
+            stmt = (
+                select(MaintenanceWindow)
+                .where(MaintenanceWindow.aircraft_id == aircraft_id)
+                .offset((page - 1) * limit)
+                .limit(limit)
+            )
 
             result = await session.execute(stmt)
             return list(result.scalars().all()), total or 0

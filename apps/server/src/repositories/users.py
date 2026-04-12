@@ -1,4 +1,5 @@
 """User repository"""
+
 import logging
 from typing import Optional
 
@@ -11,6 +12,7 @@ from src.svc.dbsvc import DbSvc
 from src.svc.secsvc import SecSvc
 
 logger = logging.getLogger(__name__)
+
 
 class UserRepository:
     """
@@ -41,37 +43,59 @@ class UserRepository:
             )
             return result.scalar_one_or_none()
 
-    async def get_instructors(self, club_id: int, page: int = 1, limit: int = 20) -> tuple[list[User], int]:
+    async def get_instructors(
+        self, club_id: int, page: int = 1, limit: int = 20
+    ) -> tuple[list[User], int]:
         """get all active instructors for a club with pagination"""
         async with self.db_svc.get_sessionmaker()() as session:
             # Count total
-            count_stmt = select(func.count()).select_from(User).where(
-                User.club_id == club_id,
-                User.role == UserRole.INSTRUCTOR,
-                User.is_active.is_(True),
+            count_stmt = (
+                select(func.count())
+                .select_from(User)
+                .where(
+                    User.club_id == club_id,
+                    User.role == UserRole.INSTRUCTOR,
+                    User.is_active.is_(True),
+                )
             )
             total = await session.scalar(count_stmt)
 
             # Get items
-            stmt = select(User).where(
-                User.club_id == club_id,
-                User.role == UserRole.INSTRUCTOR,
-                User.is_active.is_(True),
-            ).offset((page - 1) * limit).limit(limit)
-            
+            stmt = (
+                select(User)
+                .where(
+                    User.club_id == club_id,
+                    User.role == UserRole.INSTRUCTOR,
+                    User.is_active.is_(True),
+                )
+                .offset((page - 1) * limit)
+                .limit(limit)
+            )
+
             result = await session.execute(stmt)
             return list(result.scalars().all()), total or 0
 
-    async def get_all(self, club_id: int, page: int = 1, limit: int = 20) -> tuple[list[User], int]:
+    async def get_all(
+        self, club_id: int, page: int = 1, limit: int = 20
+    ) -> tuple[list[User], int]:
         """get all users for a club with pagination"""
         async with self.db_svc.get_sessionmaker()() as session:
             # Count total
-            count_stmt = select(func.count()).select_from(User).where(User.club_id == club_id)
+            count_stmt = (
+                select(func.count())
+                .select_from(User)
+                .where(User.club_id == club_id)
+            )
             total = await session.scalar(count_stmt)
 
             # Get items
-            stmt = select(User).where(User.club_id == club_id).offset((page - 1) * limit).limit(limit)
-            
+            stmt = (
+                select(User)
+                .where(User.club_id == club_id)
+                .offset((page - 1) * limit)
+                .limit(limit)
+            )
+
             result = await session.execute(stmt)
             return list(result.scalars().all()), total or 0
 

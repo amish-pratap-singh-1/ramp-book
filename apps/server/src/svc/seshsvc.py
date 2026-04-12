@@ -39,6 +39,8 @@ class SeshSvc:
         return TokenResponse(
             user={
                 "access_token": token,
-                "expires_in": self.sec_svc.get_appenv().access_token_expire_seconds,
+                "expires_in": (
+                    self.sec_svc.get_appenv().access_token_expire_seconds
+                ),
             }
         )

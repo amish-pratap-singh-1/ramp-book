@@ -5,11 +5,10 @@ import logging
 from typing import Optional
 
 from sqlalchemy import and_, func, or_, select
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from src.entities.reservation import Reservation, ReservationStatus
 from src.entities.aircraft import Aircraft
+from src.entities.reservation import Reservation, ReservationStatus
 from src.schemas.reservation import ReservationCreate, ReservationUpdate
 from src.svc.dbsvc import DbSvc
 
@@ -30,10 +29,16 @@ class ReservationRepository:
             selectinload(Reservation.instructor),
         )
 
-    async def get_all_for_club(self, club_id: int, page: int = 1, limit: int = 20) -> tuple[list[Reservation], int]:
+    async def get_all_for_club(
+        self, club_id: int, page: int = 1, limit: int = 20
+    ) -> tuple[list[Reservation], int]:
         """Get all reservations for a club (admin view) with pagination"""
         async with self.db_svc.get_sessionmaker()() as session:
-            count_stmt = select(func.count()).select_from(Reservation).where(Reservation.club_id == club_id)
+            count_stmt = (
+                select(func.count())
+                .select_from(Reservation)
+                .where(Reservation.club_id == club_id)
+            )
             total = await session.scalar(count_stmt)
 
             stmt = (
@@ -47,10 +52,16 @@ class ReservationRepository:
             result = await session.execute(stmt)
             return list(result.scalars().all()), total or 0
 
-    async def get_for_member(self, member_id: int, page: int = 1, limit: int = 20) -> tuple[list[Reservation], int]:
+    async def get_for_member(
+        self, member_id: int, page: int = 1, limit: int = 20
+    ) -> tuple[list[Reservation], int]:
         """Get all reservations for a specific member with pagination"""
         async with self.db_svc.get_sessionmaker()() as session:
-            count_stmt = select(func.count()).select_from(Reservation).where(Reservation.member_id == member_id)
+            count_stmt = (
+                select(func.count())
+                .select_from(Reservation)
+                .where(Reservation.member_id == member_id)
+            )
             total = await session.scalar(count_stmt)
 
             stmt = (
@@ -64,10 +75,17 @@ class ReservationRepository:
             result = await session.execute(stmt)
             return list(result.scalars().all()), total or 0
 
-    async def get_for_instructor(self, instructor_id: int, page: int = 1, limit: int = 20) -> tuple[list[Reservation], int]:
-        """Get all reservations where this user is the instructor with pagination"""
+    async def get_for_instructor(
+        self, instructor_id: int, page: int = 1, limit: int = 20
+    ) -> tuple[list[Reservation], int]:
+        """Get all reservations where this user is the instructor
+        with pagination"""
         async with self.db_svc.get_sessionmaker()() as session:
-            count_stmt = select(func.count()).select_from(Reservation).where(Reservation.instructor_id == instructor_id)
+            count_stmt = (
+                select(func.count())
+                .select_from(Reservation)
+                .where(Reservation.instructor_id == instructor_id)
+            )
             total = await session.scalar(count_stmt)
 
             stmt = (
@@ -117,7 +135,6 @@ class ReservationRepository:
         self,
         reservation_id: int,
         data: ReservationUpdate,
-        exclude_from_conflict: bool = True,
     ) -> Optional[Reservation]:
         """Update allowed reservation fields"""
         async with self.db_svc.get_sessionmaker()() as session:
@@ -153,7 +170,8 @@ class ReservationRepository:
         hobbs_start: float,
         hobbs_end: float,
     ) -> Optional[Reservation]:
-        """Complete a reservation: record hobbs hours and update aircraft total"""
+        """Complete a reservation: record hobbs hours and update
+        aircraft total"""
         async with self.db_svc.get_sessionmaker()() as session:
             result = await session.execute(
                 select(Reservation).where(Reservation.id == reservation_id)
@@ -167,9 +185,7 @@ class ReservationRepository:
 
             # Update aircraft total hobbs hours
             ac_result = await session.execute(
-                select(Aircraft).where(
-                    Aircraft.id == reservation.aircraft_id
-                )
+                select(Aircraft).where(Aircraft.id == reservation.aircraft_id)
             )
             aircraft = ac_result.scalar_one_or_none()
             if aircraft:
@@ -179,7 +195,7 @@ class ReservationRepository:
             logger.info("Reservation completed: %s", reservation_id)
         return await self.get_by_id(reservation_id)
 
-    # ── Conflict helpers ─────────────────────────────────────────────────────
+    # ── Conflict helpers ────────────────────────────────────────────────────
 
     async def member_is_busy(
         self,
@@ -188,7 +204,8 @@ class ReservationRepository:
         end: datetime.datetime,
         exclude_id: Optional[int] = None,
     ) -> bool:
-        """Returns True if member already has a confirmed booking in the window"""
+        """Returns True if member already has a confirmed booking in
+        the window"""
         async with self.db_svc.get_sessionmaker()() as session:
             q = select(Reservation).where(
                 and_(
@@ -210,7 +227,8 @@ class ReservationRepository:
         end: datetime.datetime,
         exclude_id: Optional[int] = None,
     ) -> bool:
-        """Returns True if instructor already has a confirmed booking in the window"""
+        """Returns True if instructor already has a confirmed booking
+        in the window"""
         async with self.db_svc.get_sessionmaker()() as session:
             q = select(Reservation).where(
                 and_(

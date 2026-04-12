@@ -18,6 +18,7 @@ class MaintenanceWindowCreate(BaseModel):
 
     @model_validator(mode="after")
     def end_after_start(self) -> "MaintenanceWindowCreate":
+        """Time constraint check"""
         if self.end_time <= self.start_time:
             raise ValueError("end_time must be after start_time")
         return self
@@ -25,6 +26,7 @@ class MaintenanceWindowCreate(BaseModel):
 
 class MaintenanceWindowCreateRequest(BaseModel):
     """Maintenance window creation request wrapper"""
+
     maintenance_window: MaintenanceWindowCreate
 
 
@@ -43,10 +45,12 @@ class MaintenanceWindowResponse(BaseModel):
 
 class MaintenanceWindowResponseWrapper(BaseModel):
     """Maintenance window response wrapper"""
+
     maintenance_window: MaintenanceWindowResponse
 
 
 class MaintenanceWindowListResponse(BaseModel):
     """Maintenance window list response"""
+
     maintenance_windows: list[MaintenanceWindowResponse]
     pagination: Pagination

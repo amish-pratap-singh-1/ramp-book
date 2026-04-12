@@ -27,6 +27,7 @@ class ReservationCreate(BaseModel):
 
 class ReservationCreateRequest(BaseModel):
     """Reservation creation request wrapper"""
+
     reservation: ReservationCreate
 
 
@@ -40,13 +41,19 @@ class ReservationUpdate(BaseModel):
 
     @model_validator(mode="after")
     def end_after_start(self) -> "ReservationUpdate":
-        if self.start_time and self.end_time and self.end_time <= self.start_time:
+        """Time constraint check"""
+        if (
+            self.start_time
+            and self.end_time
+            and self.end_time <= self.start_time
+        ):
             raise ValueError("end_time must be after start_time")
         return self
 
 
 class ReservationUpdateRequest(BaseModel):
     """Reservation update request wrapper"""
+
     reservation: ReservationUpdate
 
 
@@ -58,6 +65,7 @@ class FlightCompleteRequest(BaseModel):
 
     @model_validator(mode="after")
     def end_after_start(self) -> "FlightCompleteRequest":
+        """Time constraint check"""
         if self.hobbs_end <= self.hobbs_start:
             raise ValueError("hobbs_end must be greater than hobbs_start")
         return self
@@ -65,6 +73,7 @@ class FlightCompleteRequest(BaseModel):
 
 class FlightCompleteRequestWrapper(BaseModel):
     """Flight complete request wrapper"""
+
     flight_data: FlightCompleteRequest
 
 
@@ -112,10 +121,12 @@ class ReservationResponse(BaseModel):
 
 class ReservationResponseWrapper(BaseModel):
     """Reservation response wrapper"""
+
     reservation: ReservationResponse
 
 
 class ReservationListResponse(BaseModel):
     """Reservation list response"""
+
     reservations: list[ReservationResponse]
     pagination: Pagination

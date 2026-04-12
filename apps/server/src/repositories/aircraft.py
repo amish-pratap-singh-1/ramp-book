@@ -5,12 +5,12 @@ import logging
 from typing import Optional
 
 from sqlalchemy import and_, func, select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.entities.aircraft import Aircraft
 from src.entities.maintenance_window import MaintenanceWindow
 from src.entities.reservation import Reservation, ReservationStatus
-from src.schemas.aircraft import AircraftCreate, AircraftScheduleItem, AircraftUpdate
+from src.schemas.aircraft import (AircraftCreate, AircraftScheduleItem,
+                                  AircraftUpdate)
 from src.svc.dbsvc import DbSvc
 
 logger = logging.getLogger(__name__)
@@ -22,13 +22,24 @@ class AircraftRepository:
     def __init__(self):
         self.db_svc = DbSvc()
 
-    async def get_all(self, club_id: int, page: int = 1, limit: int = 20) -> tuple[list[Aircraft], int]:
+    async def get_all(
+        self, club_id: int, page: int = 1, limit: int = 20
+    ) -> tuple[list[Aircraft], int]:
         """Get all aircraft for a club with pagination"""
         async with self.db_svc.get_sessionmaker()() as session:
-            count_stmt = select(func.count()).select_from(Aircraft).where(Aircraft.club_id == club_id)
+            count_stmt = (
+                select(func.count())
+                .select_from(Aircraft)
+                .where(Aircraft.club_id == club_id)
+            )
             total = await session.scalar(count_stmt)
 
-            stmt = select(Aircraft).where(Aircraft.club_id == club_id).offset((page - 1) * limit).limit(limit)
+            stmt = (
+                select(Aircraft)
+                .where(Aircraft.club_id == club_id)
+                .offset((page - 1) * limit)
+                .limit(limit)
+            )
             result = await session.execute(stmt)
             return list(result.scalars().all()), total or 0
 
@@ -75,7 +86,8 @@ class AircraftRepository:
         end: datetime.datetime,
         exclude_reservation_id: Optional[int] = None,
     ) -> bool:
-        """Check if aircraft has no conflicting reservations or maintenance windows"""
+        """Check if aircraft has no conflicting reservations
+        or maintenance windows"""
         async with self.db_svc.get_sessionmaker()() as session:
             # Check active reservations overlap
             res_query = select(Reservation).where(
@@ -109,10 +121,11 @@ class AircraftRepository:
 
             return True
 
-    async def get_schedule(self, aircraft_id: int) -> list[AircraftScheduleItem]:
-        """Fetch all busy blocks (reservations and maintenance) for an aircraft"""
-        # Note: Schedule is typically not paginated in the same way as main listings
-        # because it represents a continuous timeline. Keeping it simple for now.
+    async def get_schedule(
+        self, aircraft_id: int
+    ) -> list[AircraftScheduleItem]:
+        """Fetch all busy blocks (reservations and maintenance)
+        for an aircraft"""
         schedule = []
         async with self.db_svc.get_sessionmaker()() as session:
             # 1. Fetch future confirmed reservations
@@ -120,7 +133,8 @@ class AircraftRepository:
                 and_(
                     Reservation.aircraft_id == aircraft_id,
                     Reservation.status == ReservationStatus.CONFIRMED,
-                    Reservation.end_time > datetime.datetime.now(datetime.timezone.utc)
+                    Reservation.end_time
+                    > datetime.datetime.now(datetime.timezone.utc),
                 )
             )
             reservations = await session.execute(res_query)
@@ -130,7 +144,7 @@ class AircraftRepository:
                         id=r.id,
                         start_time=r.start_time.isoformat(),
                         end_time=r.end_time.isoformat(),
-                        type="reservation"
+                        type="reservation",
                     )
                 )
 
@@ -138,7 +152,8 @@ class AircraftRepository:
             maint_query = select(MaintenanceWindow).where(
                 and_(
                     MaintenanceWindow.aircraft_id == aircraft_id,
-                    MaintenanceWindow.end_time > datetime.datetime.now(datetime.timezone.utc)
+                    MaintenanceWindow.end_time
+                    > datetime.datetime.now(datetime.timezone.utc),
                 )
             )
             maintenance = await session.execute(maint_query)
@@ -148,8 +163,8 @@ class AircraftRepository:
                         id=m.id,
                         start_time=m.start_time.isoformat(),
                         end_time=m.end_time.isoformat(),
-                        type="maintenance"
+                        type="maintenance",
                     )
                 )
-                
+
         return schedule

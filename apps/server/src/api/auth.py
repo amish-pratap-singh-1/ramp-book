@@ -1,6 +1,7 @@
 """Authentication api"""
 
 from fastapi import APIRouter
+
 from src.schemas.auth import LoginRequest, TokenResponse
 from src.svc.seshsvc import SeshSvc
 

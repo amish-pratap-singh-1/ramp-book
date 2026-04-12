@@ -36,11 +36,46 @@ async def seed():
 
         # ── Aircraft ──────────────────────────────────────────────────────────
         aircraft_data = [
-            dict(tail_number="N7421T",  model="Cessna 172S Skyhawk",         year=2008, hourly_rate_usd=165.0, total_hobbs_hours=4821.3, notes="IFR equipped, G1000"),
-            dict(tail_number="N2198K",  model="Cessna 172N Skyhawk",         year=1978, hourly_rate_usd=135.0, total_hobbs_hours=9104.7, notes="Steam gauges, good primary trainer"),
-            dict(tail_number="N55XJ",   model="Piper PA-28-161 Warrior III", year=2002, hourly_rate_usd=150.0, total_hobbs_hours=6310.0, notes="IFR equipped"),
-            dict(tail_number="N881SR",  model="Cirrus SR20",                 year=2015, hourly_rate_usd=245.0, total_hobbs_hours=2190.5, notes="Checkout required"),
-            dict(tail_number="N304RG",  model="Piper PA-28R-201 Arrow",      year=1998, hourly_rate_usd=195.0, total_hobbs_hours=7855.2, notes="Complex aircraft, checkout required"),
+            dict(
+                tail_number="N7421T",
+                model="Cessna 172S Skyhawk",
+                year=2008,
+                hourly_rate_usd=165.0,
+                total_hobbs_hours=4821.3,
+                notes="IFR equipped, G1000",
+            ),
+            dict(
+                tail_number="N2198K",
+                model="Cessna 172N Skyhawk",
+                year=1978,
+                hourly_rate_usd=135.0,
+                total_hobbs_hours=9104.7,
+                notes="Steam gauges, good primary trainer",
+            ),
+            dict(
+                tail_number="N55XJ",
+                model="Piper PA-28-161 Warrior III",
+                year=2002,
+                hourly_rate_usd=150.0,
+                total_hobbs_hours=6310.0,
+                notes="IFR equipped",
+            ),
+            dict(
+                tail_number="N881SR",
+                model="Cirrus SR20",
+                year=2015,
+                hourly_rate_usd=245.0,
+                total_hobbs_hours=2190.5,
+                notes="Checkout required",
+            ),
+            dict(
+                tail_number="N304RG",
+                model="Piper PA-28R-201 Arrow",
+                year=1998,
+                hourly_rate_usd=195.0,
+                total_hobbs_hours=7855.2,
+                notes="Complex aircraft, checkout required",
+            ),
         ]
         aircraft_objs = []
         for ac in aircraft_data:
@@ -51,9 +86,21 @@ async def seed():
 
         # ── Instructors ───────────────────────────────────────────────────────
         instructor_data = [
-            dict(email="marcus.reilly@cedarvalleyfc.com",   full_name="Marcus Reilly",    ratings="CFI,CFII,MEI"),
-            dict(email="priya.natarajan@cedarvalleyfc.com",  full_name="Priya Natarajan",  ratings="CFI,CFII"),
-            dict(email="danielle.okafor@cedarvalleyfc.com",  full_name="Danielle Okafor",  ratings="CFI"),
+            dict(
+                email="marcus.reilly@cedarvalleyfc.com",
+                full_name="Marcus Reilly",
+                ratings="CFI,CFII,MEI",
+            ),
+            dict(
+                email="priya.natarajan@cedarvalleyfc.com",
+                full_name="Priya Natarajan",
+                ratings="CFI,CFII",
+            ),
+            dict(
+                email="danielle.okafor@cedarvalleyfc.com",
+                full_name="Danielle Okafor",
+                ratings="CFI",
+            ),
         ]
         instructor_objs = []
         for ins in instructor_data:
@@ -70,16 +117,56 @@ async def seed():
 
         # ── Members ───────────────────────────────────────────────────────────
         member_data = [
-            dict(email="james.chen@cedarvalleyfc.com",       full_name="James Chen",       certificate=CertificateType.PRIVATE),
-            dict(email="sofia.alvarez@cedarvalleyfc.com",    full_name="Sofia Alvarez",    certificate=CertificateType.PRIVATE),
-            dict(email="henry.whitcombe@cedarvalleyfc.com",  full_name="Henry Whitcombe",  certificate=CertificateType.COMMERCIAL),
-            dict(email="aisha.bello@cedarvalleyfc.com",      full_name="Aisha Bello",      certificate=CertificateType.STUDENT),
-            dict(email="tomas.ribeiro@cedarvalleyfc.com",    full_name="Tomas Ribeiro",    certificate=CertificateType.PRIVATE),
-            dict(email="ingrid.lindqvist@cedarvalleyfc.com", full_name="Ingrid Lindqvist", certificate=CertificateType.PRIVATE),
-            dict(email="dev.malhotra@cedarvalleyfc.com",     full_name="Dev Malhotra",     certificate=CertificateType.STUDENT),
-            dict(email="rachel.grossman@cedarvalleyfc.com",  full_name="Rachel Grossman",  certificate=CertificateType.ATP),
-            dict(email="kofi.mensah@cedarvalleyfc.com",      full_name="Kofi Mensah",      certificate=CertificateType.PRIVATE),
-            dict(email="eleanor.park@cedarvalleyfc.com",     full_name="Eleanor Park",     certificate=CertificateType.COMMERCIAL),
+            dict(
+                email="james.chen@cedarvalleyfc.com",
+                full_name="James Chen",
+                certificate=CertificateType.PRIVATE,
+            ),
+            dict(
+                email="sofia.alvarez@cedarvalleyfc.com",
+                full_name="Sofia Alvarez",
+                certificate=CertificateType.PRIVATE,
+            ),
+            dict(
+                email="henry.whitcombe@cedarvalleyfc.com",
+                full_name="Henry Whitcombe",
+                certificate=CertificateType.COMMERCIAL,
+            ),
+            dict(
+                email="aisha.bello@cedarvalleyfc.com",
+                full_name="Aisha Bello",
+                certificate=CertificateType.STUDENT,
+            ),
+            dict(
+                email="tomas.ribeiro@cedarvalleyfc.com",
+                full_name="Tomas Ribeiro",
+                certificate=CertificateType.PRIVATE,
+            ),
+            dict(
+                email="ingrid.lindqvist@cedarvalleyfc.com",
+                full_name="Ingrid Lindqvist",
+                certificate=CertificateType.PRIVATE,
+            ),
+            dict(
+                email="dev.malhotra@cedarvalleyfc.com",
+                full_name="Dev Malhotra",
+                certificate=CertificateType.STUDENT,
+            ),
+            dict(
+                email="rachel.grossman@cedarvalleyfc.com",
+                full_name="Rachel Grossman",
+                certificate=CertificateType.ATP,
+            ),
+            dict(
+                email="kofi.mensah@cedarvalleyfc.com",
+                full_name="Kofi Mensah",
+                certificate=CertificateType.PRIVATE,
+            ),
+            dict(
+                email="eleanor.park@cedarvalleyfc.com",
+                full_name="Eleanor Park",
+                certificate=CertificateType.COMMERCIAL,
+            ),
         ]
         member_objs = []
         for mem in member_data:
@@ -106,8 +193,8 @@ async def seed():
         await db.flush()
 
         # Index lookups (seed-data.json order → 0-based)
-        ac = aircraft_objs   # ac[0]=N7421T, ac[1]=N2198K, ac[2]=N55XJ, ac[3]=N881SR, ac[4]=N304RG
-        mb = member_objs     # mb[0]=James, mb[1]=Sofia, ... mb[9]=Eleanor
+        ac = aircraft_objs  # ac[0]=N7421T, ac[1]=N2198K, ac[2]=N55XJ, ac[3]=N881SR, ac[4]=N304RG
+        mb = member_objs  # mb[0]=James, mb[1]=Sofia, ... mb[9]=Eleanor
         ins = instructor_objs  # ins[0]=Marcus, ins[1]=Priya, ins[2]=Danielle
 
         # ── Reservations ──────────────────────────────────────────────────────
@@ -115,21 +202,111 @@ async def seed():
             return datetime.datetime.fromisoformat(s)
 
         reservations_data = [
-            dict(aircraft=ac[0], member=mb[0], instructor=None,   start=dt("2026-04-08T14:00:00-05:00"), end=dt("2026-04-08T16:30:00-05:00")),
-            dict(aircraft=ac[1], member=mb[3], instructor=ins[1], start=dt("2026-04-08T15:00:00-05:00"), end=dt("2026-04-08T17:00:00-05:00")),
-            dict(aircraft=ac[2], member=mb[1], instructor=None,   start=dt("2026-04-09T08:00:00-05:00"), end=dt("2026-04-09T11:00:00-05:00")),
-            dict(aircraft=ac[3], member=mb[7], instructor=None,   start=dt("2026-04-09T13:00:00-05:00"), end=dt("2026-04-09T17:00:00-05:00")),
-            dict(aircraft=ac[0], member=mb[4], instructor=None,   start=dt("2026-04-10T09:00:00-05:00"), end=dt("2026-04-10T12:00:00-05:00")),
-            dict(aircraft=ac[1], member=mb[6], instructor=ins[0], start=dt("2026-04-10T14:00:00-05:00"), end=dt("2026-04-10T16:00:00-05:00")),
-            dict(aircraft=ac[4], member=mb[2], instructor=None,   start=dt("2026-04-11T10:00:00-05:00"), end=dt("2026-04-11T13:30:00-05:00")),
-            dict(aircraft=ac[2], member=mb[8], instructor=None,   start=dt("2026-04-11T15:00:00-05:00"), end=dt("2026-04-11T18:00:00-05:00")),
-            dict(aircraft=ac[0], member=mb[5], instructor=ins[2], start=dt("2026-04-12T09:00:00-05:00"), end=dt("2026-04-12T11:00:00-05:00")),
-            dict(aircraft=ac[3], member=mb[9], instructor=None,   start=dt("2026-04-12T13:00:00-05:00"), end=dt("2026-04-12T16:00:00-05:00")),
-            dict(aircraft=ac[1], member=mb[0], instructor=None,   start=dt("2026-04-13T08:00:00-05:00"), end=dt("2026-04-13T10:00:00-05:00")),
-            dict(aircraft=ac[2], member=mb[3], instructor=ins[1], start=dt("2026-04-13T11:00:00-05:00"), end=dt("2026-04-13T13:00:00-05:00")),
-            dict(aircraft=ac[4], member=mb[7], instructor=None,   start=dt("2026-04-14T14:00:00-05:00"), end=dt("2026-04-14T17:00:00-05:00")),
-            dict(aircraft=ac[0], member=mb[1], instructor=None,   start=dt("2026-04-15T09:00:00-05:00"), end=dt("2026-04-15T12:00:00-05:00")),
-            dict(aircraft=ac[1], member=mb[4], instructor=ins[0], start=dt("2026-04-15T15:00:00-05:00"), end=dt("2026-04-15T17:00:00-05:00")),
+            dict(
+                aircraft=ac[0],
+                member=mb[0],
+                instructor=None,
+                start=dt("2026-04-08T14:00:00-05:00"),
+                end=dt("2026-04-08T16:30:00-05:00"),
+            ),
+            dict(
+                aircraft=ac[1],
+                member=mb[3],
+                instructor=ins[1],
+                start=dt("2026-04-08T15:00:00-05:00"),
+                end=dt("2026-04-08T17:00:00-05:00"),
+            ),
+            dict(
+                aircraft=ac[2],
+                member=mb[1],
+                instructor=None,
+                start=dt("2026-04-09T08:00:00-05:00"),
+                end=dt("2026-04-09T11:00:00-05:00"),
+            ),
+            dict(
+                aircraft=ac[3],
+                member=mb[7],
+                instructor=None,
+                start=dt("2026-04-09T13:00:00-05:00"),
+                end=dt("2026-04-09T17:00:00-05:00"),
+            ),
+            dict(
+                aircraft=ac[0],
+                member=mb[4],
+                instructor=None,
+                start=dt("2026-04-10T09:00:00-05:00"),
+                end=dt("2026-04-10T12:00:00-05:00"),
+            ),
+            dict(
+                aircraft=ac[1],
+                member=mb[6],
+                instructor=ins[0],
+                start=dt("2026-04-10T14:00:00-05:00"),
+                end=dt("2026-04-10T16:00:00-05:00"),
+            ),
+            dict(
+                aircraft=ac[4],
+                member=mb[2],
+                instructor=None,
+                start=dt("2026-04-11T10:00:00-05:00"),
+                end=dt("2026-04-11T13:30:00-05:00"),
+            ),
+            dict(
+                aircraft=ac[2],
+                member=mb[8],
+                instructor=None,
+                start=dt("2026-04-11T15:00:00-05:00"),
+                end=dt("2026-04-11T18:00:00-05:00"),
+            ),
+            dict(
+                aircraft=ac[0],
+                member=mb[5],
+                instructor=ins[2],
+                start=dt("2026-04-12T09:00:00-05:00"),
+                end=dt("2026-04-12T11:00:00-05:00"),
+            ),
+            dict(
+                aircraft=ac[3],
+                member=mb[9],
+                instructor=None,
+                start=dt("2026-04-12T13:00:00-05:00"),
+                end=dt("2026-04-12T16:00:00-05:00"),
+            ),
+            dict(
+                aircraft=ac[1],
+                member=mb[0],
+                instructor=None,
+                start=dt("2026-04-13T08:00:00-05:00"),
+                end=dt("2026-04-13T10:00:00-05:00"),
+            ),
+            dict(
+                aircraft=ac[2],
+                member=mb[3],
+                instructor=ins[1],
+                start=dt("2026-04-13T11:00:00-05:00"),
+                end=dt("2026-04-13T13:00:00-05:00"),
+            ),
+            dict(
+                aircraft=ac[4],
+                member=mb[7],
+                instructor=None,
+                start=dt("2026-04-14T14:00:00-05:00"),
+                end=dt("2026-04-14T17:00:00-05:00"),
+            ),
+            dict(
+                aircraft=ac[0],
+                member=mb[1],
+                instructor=None,
+                start=dt("2026-04-15T09:00:00-05:00"),
+                end=dt("2026-04-15T12:00:00-05:00"),
+            ),
+            dict(
+                aircraft=ac[1],
+                member=mb[4],
+                instructor=ins[0],
+                start=dt("2026-04-15T15:00:00-05:00"),
+                end=dt("2026-04-15T17:00:00-05:00"),
+            ),
         ]
         for r in reservations_data:
             db.add(
@@ -137,7 +314,9 @@ async def seed():
                     club_id=club.id,
                     aircraft_id=r["aircraft"].id,
                     member_id=r["member"].id,
-                    instructor_id=r["instructor"].id if r["instructor"] else None,
+                    instructor_id=(
+                        r["instructor"].id if r["instructor"] else None
+                    ),
                     start_time=r["start"],
                     end_time=r["end"],
                     status=ReservationStatus.CONFIRMED,

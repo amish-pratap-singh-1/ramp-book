@@ -21,6 +21,7 @@ class UserCreate(BaseModel):
 
 class UserCreateRequest(BaseModel):
     """User creation request wrapper"""
+
     user: UserCreate
 
 
@@ -41,10 +42,12 @@ class UserResponse(BaseModel):
 
 class UserResponseWrapper(BaseModel):
     """User response wrapper"""
+
     user: UserResponse
 
 
 class UserListResponse(BaseModel):
     """User list response"""
+
     users: list[UserResponse]
     pagination: Pagination

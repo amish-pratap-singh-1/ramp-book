@@ -21,6 +21,7 @@ class AircraftCreate(BaseModel):
 
 class AircraftCreateRequest(BaseModel):
     """Aircraft creation request wrapper"""
+
     aircraft: AircraftCreate
 
 
@@ -37,6 +38,7 @@ class AircraftUpdate(BaseModel):
 
 class AircraftUpdateRequest(BaseModel):
     """Aircraft update request wrapper"""
+
     aircraft: AircraftUpdate
 
 
@@ -58,11 +60,13 @@ class AircraftResponse(BaseModel):
 
 class AircraftResponseWrapper(BaseModel):
     """Aircraft response wrapper"""
+
     aircraft: AircraftResponse
 
 
 class AircraftListResponse(BaseModel):
     """Aircraft list response"""
+
     aircrafts: list[AircraftResponse]
     pagination: Pagination
 
@@ -73,10 +77,11 @@ class AircraftScheduleItem(BaseModel):
     id: int
     start_time: str
     end_time: str
-    type: str # 'reservation' | 'maintenance'
+    type: str  # 'reservation' | 'maintenance'
 
 
 class AircraftScheduleListResponse(BaseModel):
     """Aircraft schedule list response"""
+
     schedules: list[AircraftScheduleItem]
     pagination: Pagination

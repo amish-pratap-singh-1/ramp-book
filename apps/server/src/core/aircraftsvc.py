@@ -1,13 +1,13 @@
 """Aircraft service module"""
 
 import logging
-from typing import Optional
 
 from src.entities.aircraft import Aircraft
 from src.entities.maintenance_window import MaintenanceWindow
 from src.repositories.aircraft import AircraftRepository
 from src.repositories.maintenance import MaintenanceRepository
-from src.schemas.aircraft import AircraftCreate, AircraftUpdate, AircraftScheduleItem
+from src.schemas.aircraft import (AircraftCreate, AircraftScheduleItem,
+                                  AircraftUpdate)
 from src.schemas.maintenance import MaintenanceWindowCreate
 from src.svc.errsvc import ResourceNotFoundError
 
@@ -21,7 +21,9 @@ class AircraftSvc:
         self.aircraft_repo = AircraftRepository()
         self.maint_repo = MaintenanceRepository()
 
-    async def list_aircraft(self, club_id: int, page: int, limit: int) -> tuple[list[Aircraft], int]:
+    async def list_aircraft(
+        self, club_id: int, page: int, limit: int
+    ) -> tuple[list[Aircraft], int]:
         """List all aircraft in the club fleet"""
         return await self.aircraft_repo.get_all(club_id, page, limit)
 
@@ -32,28 +34,38 @@ class AircraftSvc:
             raise ResourceNotFoundError("Aircraft not found")
         return aircraft
 
-    async def get_schedule(self, aircraft_id: int) -> list[AircraftScheduleItem]:
+    async def get_schedule(
+        self, aircraft_id: int
+    ) -> list[AircraftScheduleItem]:
         """Get non-identifying overlap schedule for an aircraft"""
         # First verify aircraft exists
         await self.get_aircraft(aircraft_id)
         return await self.aircraft_repo.get_schedule(aircraft_id)
 
-    async def create_aircraft(self, club_id: int, data: AircraftCreate) -> Aircraft:
+    async def create_aircraft(
+        self, club_id: int, data: AircraftCreate
+    ) -> Aircraft:
         """Create a new aircraft (admin only)"""
         return await self.aircraft_repo.create(club_id, data)
 
-    async def update_aircraft(self, aircraft_id: int, data: AircraftUpdate) -> Aircraft:
+    async def update_aircraft(
+        self, aircraft_id: int, data: AircraftUpdate
+    ) -> Aircraft:
         """Update aircraft details (admin only)"""
         aircraft = await self.aircraft_repo.update(aircraft_id, data)
         if not aircraft:
             raise ResourceNotFoundError("Aircraft not found")
         return aircraft
 
-    async def list_maintenance(self, club_id: int, page: int, limit: int) -> tuple[list[MaintenanceWindow], int]:
+    async def list_maintenance(
+        self, club_id: int, page: int, limit: int
+    ) -> tuple[list[MaintenanceWindow], int]:
         """List all maintenance windows (admin only)"""
         return await self.maint_repo.get_all(club_id, page, limit)
 
-    async def create_maintenance(self, club_id: int, data: MaintenanceWindowCreate) -> MaintenanceWindow:
+    async def create_maintenance(
+        self, club_id: int, data: MaintenanceWindowCreate
+    ) -> MaintenanceWindow:
         """Create a maintenance window (admin only)"""
         return await self.maint_repo.create(club_id, data)
 

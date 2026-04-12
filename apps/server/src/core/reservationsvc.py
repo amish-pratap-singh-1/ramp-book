@@ -1,24 +1,15 @@
 """Reservation service module"""
 
 import logging
-from typing import Optional
 
 from src.entities.reservation import Reservation, ReservationStatus
 from src.entities.user import UserRole
 from src.repositories.aircraft import AircraftRepository
 from src.repositories.reservations import ReservationRepository
 from src.repositories.users import UserRepository
-from src.schemas.reservation import (
-    ReservationCreate,
-    ReservationUpdate,
-    FlightCompleteRequest,
-)
-from src.svc.errsvc import (
-    ConflictError,
-    ForbiddenError,
-    ResourceNotFoundError,
-    UserNotFoundError,
-)
+from src.schemas.reservation import (FlightCompleteRequest, ReservationCreate,
+                                     ReservationUpdate)
+from src.svc.errsvc import ConflictError, ForbiddenError, ResourceNotFoundError
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +43,10 @@ class ReservationSvc:
 
         # Non-admins may only view their own
         if role not in (UserRole.ADMIN, UserRole.ADMIN.value):
-            if reservation.member_id != user_id and reservation.instructor_id != user_id:
+            if (
+                reservation.member_id != user_id
+                and reservation.instructor_id != user_id
+            ):
                 raise ForbiddenError()
 
         return reservation
@@ -67,12 +61,17 @@ class ReservationSvc:
         )
         if not aircraft_ok:
             raise ConflictError(
-                "Aircraft is already booked or under maintenance in that window"
+                "Aircraft is already booked or under maintenance"
+                " in that window"
             )
 
         # 2. Member double-booking
-        if await self.res_repo.member_is_busy(user_id, data.start_time, data.end_time):
-            raise ConflictError("You already have a reservation in that time window")
+        if await self.res_repo.member_is_busy(
+            user_id, data.start_time, data.end_time
+        ):
+            raise ConflictError(
+                "You already have a reservation in that time window"
+            )
 
         # 3. Instructor double-booking
         if data.instructor_id:
@@ -86,7 +85,11 @@ class ReservationSvc:
         return await self.res_repo.create(club_id, user_id, data)
 
     async def update_reservation(
-        self, reservation_id: int, user_id: int, role: str, data: ReservationUpdate
+        self,
+        reservation_id: int,
+        user_id: int,
+        role: str,
+        data: ReservationUpdate,
     ) -> Reservation:
         """Edit reservation with re-validation of rules"""
         reservation = await self.res_repo.get_by_id(reservation_id)
@@ -119,13 +122,16 @@ class ReservationSvc:
             )
             if not aircraft_ok:
                 raise ConflictError(
-                    "Aircraft is already booked or under maintenance in that window"
+                    "Aircraft is already booked or under"
+                    " maintenance in that window"
                 )
 
             if await self.res_repo.member_is_busy(
                 user_id, new_start, new_end, exclude_id=reservation_id
             ):
-                raise ConflictError("You already have a reservation in that time window")
+                raise ConflictError(
+                    "You already have a reservation in that time window"
+                )
 
         if new_instr and new_instr != reservation.instructor_id:
             if await self.res_repo.instructor_is_busy(
@@ -155,7 +161,11 @@ class ReservationSvc:
         return await self.res_repo.cancel(reservation_id)
 
     async def complete_reservation(
-        self, reservation_id: int, user_id: int, role: str, data: FlightCompleteRequest
+        self,
+        reservation_id: int,
+        user_id: int,
+        role: str,
+        data: FlightCompleteRequest,
     ) -> Reservation:
         """Log flight completion with hobbs hours"""
         reservation = await self.res_repo.get_by_id(reservation_id)
@@ -171,4 +181,6 @@ class ReservationSvc:
         if reservation.status == ReservationStatus.CANCELLED:
             raise ConflictError("Cannot complete a cancelled reservation")
 
-        return await self.res_repo.complete(reservation_id, data.hobbs_start, data.hobbs_end)
+        return await self.res_repo.complete(
+            reservation_id, data.hobbs_start, data.hobbs_end
+        )

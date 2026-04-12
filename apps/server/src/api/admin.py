@@ -2,27 +2,19 @@
 
 from fastapi import APIRouter, Query, Request
 
+from src.core.aircraftsvc import AircraftSvc
+from src.core.reservationsvc import ReservationSvc
+from src.core.usrsvc import UsrSvc
 from src.decorators.auth import protected
 from src.entities.user import UserRole
-from src.repositories.maintenance import MaintenanceRepository
-from src.repositories.reservations import ReservationRepository
-from src.repositories.users import UserRepository
-from src.schemas.maintenance import (
-    MaintenanceWindowCreateRequest,
-    MaintenanceWindowListResponse,
-    MaintenanceWindowResponse,
-    MaintenanceWindowResponseWrapper,
-)
-from src.schemas.reservation import ReservationListResponse, ReservationResponse
-from src.schemas.user import (
-    UserCreateRequest,
-    UserListResponse,
-    UserResponse,
-    UserResponseWrapper,
-)
-from src.svc.aircraftsvc import AircraftSvc
-from src.svc.reservationsvc import ReservationSvc
-from src.svc.usrsvc import UsrSvc
+from src.schemas.maintenance import (MaintenanceWindowCreateRequest,
+                                     MaintenanceWindowListResponse,
+                                     MaintenanceWindowResponse,
+                                     MaintenanceWindowResponseWrapper)
+from src.schemas.reservation import (ReservationListResponse,
+                                     ReservationResponse)
+from src.schemas.user import (UserCreateRequest, UserListResponse,
+                              UserResponse, UserResponseWrapper)
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
@@ -36,24 +28,22 @@ usr_svc = UsrSvc()
 async def all_reservations(
     request: Request,
     page: int = Query(1, ge=1),
-    limit: int = Query(20, ge=1, le=100)
+    limit: int = Query(20, ge=1, le=100),
 ) -> ReservationListResponse:
     """Get all reservations across the club (admin only)"""
     user_id = int(request.state.user["sub"])
     role = request.state.user["role"]
     user = await usr_svc.get_me(user_id)
-    
+
     reservations, total = await res_svc.list_reservations(
         user_id, role, user.club_id, page, limit
     )
-    
+
     return {
-        "reservations": [ReservationResponse.model_validate(r) for r in reservations],
-        "pagination": {
-            "page": page,
-            "limit": limit,
-            "total": total
-        }
+        "reservations": [
+            ReservationResponse.model_validate(r) for r in reservations
+        ],
+        "pagination": {"page": page, "limit": limit, "total": total},
     }
 
 
@@ -62,25 +52,29 @@ async def all_reservations(
 async def list_maintenance(
     request: Request,
     page: int = Query(1, ge=1),
-    limit: int = Query(20, ge=1, le=100)
+    limit: int = Query(20, ge=1, le=100),
 ) -> MaintenanceWindowListResponse:
     """List all maintenance windows (admin only)"""
     user_id = int(request.state.user["sub"])
     user = await usr_svc.get_me(user_id)
-    
-    windows, total = await aircraft_svc.list_maintenance(user.club_id, page, limit)
-    
+
+    windows, total = await aircraft_svc.list_maintenance(
+        user.club_id, page, limit
+    )
+
     return {
-        "maintenance_windows": [MaintenanceWindowResponse.model_validate(w) for w in windows],
-        "pagination": {
-            "page": page,
-            "limit": limit,
-            "total": total
-        }
+        "maintenance_windows": [
+            MaintenanceWindowResponse.model_validate(w) for w in windows
+        ],
+        "pagination": {"page": page, "limit": limit, "total": total},
     }
 
 
-@router.post("/maintenance", response_model=MaintenanceWindowResponseWrapper, status_code=201)
+@router.post(
+    "/maintenance",
+    response_model=MaintenanceWindowResponseWrapper,
+    status_code=201,
+)
 @protected(UserRole.ADMIN)
 async def create_maintenance(
     req: MaintenanceWindowCreateRequest, request: Request
@@ -88,14 +82,18 @@ async def create_maintenance(
     """Create a maintenance window (admin only)"""
     user_id = int(request.state.user["sub"])
     user = await usr_svc.get_me(user_id)
-    
-    window = await aircraft_svc.create_maintenance(user.club_id, req.maintenance_window)
-    return {"maintenance_window": MaintenanceWindowResponse.model_validate(window)}
+
+    window = await aircraft_svc.create_maintenance(
+        user.club_id, req.maintenance_window
+    )
+    return {
+        "maintenance_window": MaintenanceWindowResponse.model_validate(window)
+    }
 
 
 @router.delete("/maintenance/{window_id}", status_code=204)
 @protected(UserRole.ADMIN)
-async def delete_maintenance(window_id: int, request: Request) -> None:
+async def delete_maintenance(window_id: int) -> None:
     """Delete a maintenance window (admin only)"""
     await aircraft_svc.delete_maintenance(window_id)
 
@@ -105,28 +103,26 @@ async def delete_maintenance(window_id: int, request: Request) -> None:
 async def list_users(
     request: Request,
     page: int = Query(1, ge=1),
-    limit: int = Query(20, ge=1, le=100)
+    limit: int = Query(20, ge=1, le=100),
 ) -> UserListResponse:
     """List all users (admin only)"""
     user_id = int(request.state.user["sub"])
-    
+
     users, total = await usr_svc.list_users(user_id, page, limit)
-    
+
     return {
         "users": [UserResponse.model_validate(u) for u in users],
-        "pagination": {
-            "page": page,
-            "limit": limit,
-            "total": total
-        }
+        "pagination": {"page": page, "limit": limit, "total": total},
     }
 
 
 @router.post("/users", response_model=UserResponseWrapper, status_code=201)
 @protected(UserRole.ADMIN)
-async def create_user(req: UserCreateRequest, request: Request) -> UserResponseWrapper:
+async def create_user(
+    req: UserCreateRequest, request: Request
+) -> UserResponseWrapper:
     """Create a new user (admin only)"""
     user_id = int(request.state.user["sub"])
-    
+
     new_user = await usr_svc.create_user(user_id, req.user)
     return {"user": UserResponse.model_validate(new_user)}
