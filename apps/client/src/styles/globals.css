@@ -253,6 +253,46 @@ body {
   .empty-title {
     @apply text-lg font-semibold text-secondary;
   }
+
+  /* Modal Styles */
+  .modal-backdrop {
+    @apply fixed inset-0 z-50 bg-base/80 backdrop-blur-md flex items-center justify-center p-4;
+    animation: fadeIn 0.2s ease-out;
+  }
+
+  .modal-content {
+    @apply bg-surface border border-edge-strong rounded-3xl shadow-2xl w-full max-w-lg p-8;
+    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* Custom Number Input */
+  .number-input-wrap {
+    @apply relative flex items-center bg-elevated border border-edge-strong rounded-xl px-1 py-1 transition-all duration-150 focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/20;
+  }
+
+  .number-input-field {
+    @apply w-full bg-transparent border-0 px-2 py-1.5 text-sm text-primary placeholder:text-muted outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none;
+  }
+
+  .number-input-btn {
+    @apply flex items-center justify-center w-8 h-8 rounded-lg text-secondary hover:bg-surface hover:text-primary active:scale-90 transition-all cursor-pointer;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 /* Autofill fix */

@@ -6,6 +6,9 @@ import Layout from "@/components/Layout";
 import StatusBadge from "@/components/StatusBadge";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import QueryBoundary from "@/components/QueryBoundary";
+import Modal from "@/components/Modal";
+import ConfirmModal from "@/components/ConfirmModal";
+import NumberInput from "@/components/NumberInput";
 import { useReservations, useCancelReservation, useCompleteReservation } from "@/hooks/useReservations";
 import { isAuthenticated } from "@/lib/auth";
 import type { components } from "@/api/schema";
@@ -31,6 +34,7 @@ export default function ReservationsPage() {
 
   const [tab, setTab] = useState<"upcoming" | "past">("upcoming");
   const [logFlight, setLogFlight] = useState<Reservation | null>(null);
+  const [cancelId, setCancelId] = useState<number | null>(null);
   const [hobbs, setHobbs] = useState({ hobbs_start: "", hobbs_end: "" });
   const [error, setError] = useState("");
 
@@ -52,8 +56,15 @@ export default function ReservationsPage() {
   const shown = tab === "upcoming" ? upcoming : past;
 
   const handleCancel = (id: number) => {
-    if (!confirm("Cancel this reservation?")) return;
-    cancel.mutate(id);
+    setCancelId(id);
+  };
+
+  const onConfirmCancel = () => {
+    if (cancelId) {
+      cancel.mutate(cancelId, {
+        onSuccess: () => setCancelId(null)
+      });
+    }
   };
 
   const handleComplete = () => {
@@ -183,37 +194,56 @@ export default function ReservationsPage() {
 
 
       {/* Log Flight Modal */}
-      {logFlight && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-6">
-          <div className="bg-surface border border-edge-strong rounded-2xl p-8 w-full max-w-md shadow-2xl animate-[fadeIn_0.2s_ease]">
-            <h2 className="text-lg font-bold text-primary mb-1">Log Flight</h2>
-            <p className="text-sm text-secondary mb-6">
+      <Modal 
+        isOpen={!!logFlight} 
+        onClose={() => setLogFlight(null)} 
+        title="Log Flight"
+        maxWidth="max-w-md"
+      >
+        {logFlight && (
+          <>
+            <p className="text-sm text-secondary mb-6 -mt-4">
               {logFlight.aircraft?.tail_number} · {logFlight.aircraft?.model}
             </p>
 
-            <div className="flex flex-col gap-4">
-              <div className="field">
-                <label className="label" htmlFor="hobbs-start">Hobbs Start</label>
-                <input id="hobbs-start" type="number" step="0.1" className="input" placeholder="e.g. 4821.3"
-                  value={hobbs.hobbs_start} onChange={(e) => setHobbs((p) => ({ ...p, hobbs_start: e.target.value }))} />
-              </div>
-              <div className="field">
-                <label className="label" htmlFor="hobbs-end">Hobbs End</label>
-                <input id="hobbs-end" type="number" step="0.1" className="input" placeholder="e.g. 4823.8"
-                  value={hobbs.hobbs_end} onChange={(e) => setHobbs((p) => ({ ...p, hobbs_end: e.target.value }))} />
-              </div>
+            <div className="flex flex-col gap-6">
+              <NumberInput 
+                id="hobbs-start" 
+                label="Hobbs Start" 
+                placeholder="e.g. 4821.3"
+                value={hobbs.hobbs_start} 
+                onChange={(val) => setHobbs((p) => ({ ...p, hobbs_start: val }))} 
+              />
+              <NumberInput 
+                id="hobbs-end" 
+                label="Hobbs End" 
+                placeholder="e.g. 4823.8"
+                value={hobbs.hobbs_end} 
+                onChange={(val) => setHobbs((p) => ({ ...p, hobbs_end: val }))} 
+              />
               {error && <p className="err">{error}</p>}
             </div>
 
-            <div className="flex gap-3 justify-end mt-6">
+            <div className="flex gap-3 justify-end mt-8">
               <button onClick={() => setLogFlight(null)} className="btn-ghost">Cancel</button>
               <button onClick={handleComplete} disabled={complete.isPending} className="btn-primary" id="submit-flight-log">
                 {complete.isPending ? "Saving…" : "Save Flight"}
               </button>
             </div>
-          </div>
-        </div>
-      )}
+          </>
+        )}
+      </Modal>
+
+      {/* Cancel Confirmation Modal */}
+      <ConfirmModal
+        isOpen={!!cancelId}
+        onClose={() => setCancelId(null)}
+        onConfirm={onConfirmCancel}
+        title="Cancel Reservation"
+        message="Are you sure you want to cancel this reservation? This action cannot be undone."
+        confirmLabel="Yes, Cancel Booking"
+        isLoading={cancel.isPending}
+      />
     </>
   );
 }

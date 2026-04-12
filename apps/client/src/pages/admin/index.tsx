@@ -7,6 +7,7 @@ import Layout from "@/components/Layout";
 import StatusBadge from "@/components/StatusBadge";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import QueryBoundary from "@/components/QueryBoundary";
+import ConfirmModal from "@/components/ConfirmModal";
 import { adminApi } from "@/api/admin.api";
 import { useAircraft } from "@/hooks/useAircraft";
 import { isAuthenticated, getUserRole } from "@/lib/auth";
@@ -21,6 +22,7 @@ export default function AdminPage() {
   const [tab, setTab] = useState<"reservations" | "maintenance" | "users">("reservations");
   const [showMaintForm, setShowMaintForm] = useState(false);
   const [showUserForm, setShowUserForm] = useState(false);
+  const [maintToDelete, setMaintToDelete] = useState<number | null>(null);
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [currentView, setCurrentView] = useState<View>("day");
 
@@ -71,6 +73,7 @@ export default function AdminPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin_maintenance"] });
       qc.invalidateQueries({ queryKey: ["aircraft"] });
+      setMaintToDelete(null);
     },
   });
 
@@ -312,7 +315,7 @@ export default function AdminPage() {
                               <td>{m.reason || "—"}</td>
                               <td>
                                 <button
-                                  onClick={() => { if(confirm("Remove?")) deleteMaint.mutate(m.id); }}
+                                  onClick={() => setMaintToDelete(m.id)}
                                   className="btn-danger btn-sm"
                                   disabled={deleteMaint.isPending}
                                 >
@@ -411,6 +414,15 @@ export default function AdminPage() {
         </QueryBoundary>
       </Layout>
 
+      <ConfirmModal
+        isOpen={!!maintToDelete}
+        onClose={() => setMaintToDelete(null)}
+        onConfirm={() => maintToDelete && deleteMaint.mutate(maintToDelete)}
+        title="Remove Maintenance"
+        message="Are you sure you want to remove this maintenance window? This will make the aircraft available for bookings again."
+        confirmLabel="Remove Window"
+        isLoading={deleteMaint.isPending}
+      />
     </>
   );
 }
