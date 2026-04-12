@@ -22,16 +22,16 @@ class ReservationSvc:
         self.aircraft_repo = AircraftRepository()
         self.user_repo = UserRepository()
 
+    # pylint: disable=too-many-arguments,too-many-positional-arguments
     async def list_reservations(
         self, user_id: int, role: str, club_id: int, page: int, limit: int
     ) -> tuple[list[Reservation], int]:
         """Context-aware reservation listing"""
-        if role == UserRole.ADMIN or role == UserRole.ADMIN.value:
+        if role in (UserRole.ADMIN, UserRole.ADMIN.value):
             return await self.res_repo.get_all_for_club(club_id, page, limit)
-        elif role == UserRole.INSTRUCTOR or role == UserRole.INSTRUCTOR.value:
+        if role in (UserRole.INSTRUCTOR, UserRole.INSTRUCTOR.value):
             return await self.res_repo.get_for_instructor(user_id, page, limit)
-        else:
-            return await self.res_repo.get_for_member(user_id, page, limit)
+        return await self.res_repo.get_for_member(user_id, page, limit)
 
     async def get_reservation(
         self, reservation_id: int, user_id: int, role: str
@@ -43,9 +43,9 @@ class ReservationSvc:
 
         # Non-admins may only view their own
         if role not in (UserRole.ADMIN, UserRole.ADMIN.value):
-            if (
-                reservation.member_id != user_id
-                and reservation.instructor_id != user_id
+            if user_id not in (
+                reservation.member_id,
+                reservation.instructor_id,
             ):
                 raise ForbiddenError()
 

@@ -50,7 +50,7 @@ class UserRepository:
         async with self.db_svc.get_sessionmaker()() as session:
             # Count total
             count_stmt = (
-                select(func.count())
+                select(func.count())  # pylint: disable=not-callable
                 .select_from(User)
                 .where(
                     User.club_id == club_id,
@@ -83,7 +83,7 @@ class UserRepository:
         async with self.db_svc.get_sessionmaker()() as session:
             # Count total
             count_stmt = (
-                select(func.count())
+                select(func.count())  # pylint: disable=not-callable
                 .select_from(User)
                 .where(User.club_id == club_id)
             )

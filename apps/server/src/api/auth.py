@@ -13,8 +13,8 @@ sesh_svc = SeshSvc()
 
 @router.post("/auth/login", response_model=TokenResponse)
 async def login(req: LoginRequest) -> TokenResponse:
+    """Login api"""
     try:
-        """Login api"""
         return await sesh_svc.login(req)
     except Exception as e:
         raise ErrSvc.handle_api_error(e)

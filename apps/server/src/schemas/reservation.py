@@ -20,6 +20,7 @@ class ReservationCreate(BaseModel):
 
     @model_validator(mode="after")
     def end_after_start(self) -> "ReservationCreate":
+        """Ensure end_time is after start_time"""
         if self.end_time <= self.start_time:
             raise ValueError("end_time must be after start_time")
         return self

@@ -24,7 +24,7 @@ class MaintenanceRepository:
         """Get all maintenance windows for a club with pagination"""
         async with self.db_svc.get_sessionmaker()() as session:
             count_stmt = (
-                select(func.count())
+                select(func.count())  # pylint: disable=not-callable
                 .select_from(MaintenanceWindow)
                 .where(MaintenanceWindow.club_id == club_id)
             )
@@ -47,7 +47,7 @@ class MaintenanceRepository:
         """Get maintenance windows for a specific aircraft with pagination"""
         async with self.db_svc.get_sessionmaker()() as session:
             count_stmt = (
-                select(func.count())
+                select(func.count())  # pylint: disable=not-callable
                 .select_from(MaintenanceWindow)
                 .where(MaintenanceWindow.aircraft_id == aircraft_id)
             )

@@ -28,7 +28,7 @@ class AircraftRepository:
         """Get all aircraft for a club with pagination"""
         async with self.db_svc.get_sessionmaker()() as session:
             count_stmt = (
-                select(func.count())
+                select(func.count())  # pylint: disable=not-callable
                 .select_from(Aircraft)
                 .where(Aircraft.club_id == club_id)
             )

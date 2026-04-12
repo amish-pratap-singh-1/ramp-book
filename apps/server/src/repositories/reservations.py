@@ -35,7 +35,7 @@ class ReservationRepository:
         """Get all reservations for a club (admin view) with pagination"""
         async with self.db_svc.get_sessionmaker()() as session:
             count_stmt = (
-                select(func.count())
+                select(func.count())  # pylint: disable=not-callable
                 .select_from(Reservation)
                 .where(Reservation.club_id == club_id)
             )
@@ -58,7 +58,7 @@ class ReservationRepository:
         """Get all reservations for a specific member with pagination"""
         async with self.db_svc.get_sessionmaker()() as session:
             count_stmt = (
-                select(func.count())
+                select(func.count())  # pylint: disable=not-callable
                 .select_from(Reservation)
                 .where(Reservation.member_id == member_id)
             )
@@ -82,7 +82,7 @@ class ReservationRepository:
         with pagination"""
         async with self.db_svc.get_sessionmaker()() as session:
             count_stmt = (
-                select(func.count())
+                select(func.count())  # pylint: disable=not-callable
                 .select_from(Reservation)
                 .where(Reservation.instructor_id == instructor_id)
             )

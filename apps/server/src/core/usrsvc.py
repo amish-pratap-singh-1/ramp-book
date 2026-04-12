@@ -1,7 +1,6 @@
 """User service module"""
 
 import logging
-from typing import Optional
 
 from src.entities.user import User
 from src.repositories.users import UserRepository
