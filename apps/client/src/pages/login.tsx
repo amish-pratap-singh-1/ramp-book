@@ -90,10 +90,6 @@ export default function LoginPage() {
                 )}
               </button>
             </form>
-
-            <div className="mt-8 pt-6 border-t border-white/[0.06] text-center">
-              <p className="text-xs text-muted">Demo password for all accounts: <span className="text-secondary font-mono">changeme123</span></p>
-            </div>
           </div>
         </div>
       </div>

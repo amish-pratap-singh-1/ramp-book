@@ -1,4 +1,5 @@
 import { api } from "@/lib/api";
+import type { AxiosRequestConfig } from "axios";
 
 export interface User {
   id: number;
@@ -12,12 +13,12 @@ export interface User {
 }
 
 export const usersApi = {
-  me: async (): Promise<User> => {
-    const res = await api.get("/api/v1/users/me");
+  me: async (config?: AxiosRequestConfig): Promise<User> => {
+    const res = await api.get("/api/v1/users/me", config);
     return res.data;
   },
-  instructors: async (): Promise<User[]> => {
-    const res = await api.get("/api/v1/users/instructors");
+  instructors: async (config?: AxiosRequestConfig): Promise<User[]> => {
+    const res = await api.get("/api/v1/users/instructors", config);
     return res.data;
   },
 };

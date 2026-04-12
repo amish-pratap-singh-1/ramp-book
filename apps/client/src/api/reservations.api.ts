@@ -1,4 +1,5 @@
 import { api } from "@/lib/api";
+import type { AxiosRequestConfig } from "axios";
 
 export interface ReservationMember {
   id: number;
@@ -51,28 +52,28 @@ export interface FlightComplete {
 }
 
 export const reservationsApi = {
-  list: async (): Promise<Reservation[]> => {
-    const res = await api.get("/api/v1/reservations/");
+  list: async (config?: AxiosRequestConfig): Promise<Reservation[]> => {
+    const res = await api.get("/api/v1/reservations/", config);
     return res.data;
   },
-  get: async (id: number): Promise<Reservation> => {
-    const res = await api.get(`/api/v1/reservations/${id}`);
+  get: async (id: number, config?: AxiosRequestConfig): Promise<Reservation> => {
+    const res = await api.get(`/api/v1/reservations/${id}`, config);
     return res.data;
   },
-  create: async (data: ReservationCreate): Promise<Reservation> => {
-    const res = await api.post("/api/v1/reservations/", data);
+  create: async (data: ReservationCreate, config?: AxiosRequestConfig): Promise<Reservation> => {
+    const res = await api.post("/api/v1/reservations/", data, config);
     return res.data;
   },
-  update: async (id: number, data: ReservationUpdate): Promise<Reservation> => {
-    const res = await api.patch(`/api/v1/reservations/${id}`, data);
+  update: async (id: number, data: ReservationUpdate, config?: AxiosRequestConfig): Promise<Reservation> => {
+    const res = await api.patch(`/api/v1/reservations/${id}`, data, config);
     return res.data;
   },
-  cancel: async (id: number): Promise<Reservation> => {
-    const res = await api.delete(`/api/v1/reservations/${id}`);
+  cancel: async (id: number, config?: AxiosRequestConfig): Promise<Reservation> => {
+    const res = await api.delete(`/api/v1/reservations/${id}`, config);
     return res.data;
   },
-  complete: async (id: number, data: FlightComplete): Promise<Reservation> => {
-    const res = await api.post(`/api/v1/reservations/${id}/complete`, data);
+  complete: async (id: number, data: FlightComplete, config?: AxiosRequestConfig): Promise<Reservation> => {
+    const res = await api.post(`/api/v1/reservations/${id}/complete`, data, config);
     return res.data;
   },
 };

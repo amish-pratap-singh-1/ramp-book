@@ -1,4 +1,5 @@
 import { api } from "@/lib/api";
+import type { AxiosRequestConfig } from "axios";
 
 export interface Aircraft {
   id: number;
@@ -29,20 +30,20 @@ export interface AircraftCreate {
 }
 
 export const aircraftApi = {
-  list: async (): Promise<Aircraft[]> => {
-    const res = await api.get("/api/v1/aircraft/");
+  list: async (config?: AxiosRequestConfig): Promise<Aircraft[]> => {
+    const res = await api.get("/api/v1/aircraft/", config);
     return res.data;
   },
-  get: async (id: number): Promise<Aircraft> => {
-    const res = await api.get(`/api/v1/aircraft/${id}`);
+  get: async (id: number, config?: AxiosRequestConfig): Promise<Aircraft> => {
+    const res = await api.get(`/api/v1/aircraft/${id}`, config);
     return res.data;
   },
-  getSchedule: async (id: number): Promise<AircraftScheduleItem[]> => {
-    const res = await api.get(`/api/v1/aircraft/${id}/schedule`);
+  getSchedule: async (id: number, config?: AxiosRequestConfig): Promise<AircraftScheduleItem[]> => {
+    const res = await api.get(`/api/v1/aircraft/${id}/schedule`, config);
     return res.data;
   },
-  create: async (data: AircraftCreate): Promise<Aircraft> => {
-    const res = await api.post("/api/v1/aircraft/", data);
+  create: async (data: AircraftCreate, config?: AxiosRequestConfig): Promise<Aircraft> => {
+    const res = await api.post("/api/v1/aircraft/", data, config);
     return res.data;
   },
 };

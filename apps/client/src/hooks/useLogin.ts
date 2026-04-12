@@ -6,10 +6,14 @@ import { setToken } from "@/lib/auth";
 export function useLogin() {
   const router = useRouter();
   return useMutation({
-    mutationFn: authApi.login,
+    mutationFn: (data: any) =>
+      authApi.login(data, {
+        showToast: true,
+        successMessage: "Welcome back! Redirecting you now...",
+      }),
     onSuccess: (data) => {
       setToken(data.access_token);
-      router.push("/dashboard");
+      router.replace("/dashboard");
     },
   });
 }
