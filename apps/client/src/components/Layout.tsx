@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 import { clearToken, getUserRole } from "@/lib/auth";
 import { useMe } from "@/hooks/useMe";
+import ConfirmModal from "./ConfirmModal";
 
 const navItems = [
   { href: "/dashboard",    icon: "⊞", label: "Dashboard"  },
@@ -19,8 +20,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const me = meData?.user;
   const role = getUserRole();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
-  const handleLogout = () => { clearToken(); router.push("/login"); };
+  const handleLogout = () => { setShowLogoutConfirm(true); };
+  const confirmLogout = () => { clearToken(); router.push("/login"); };
 
   const initials = me?.full_name
     ? me.full_name.split(" ").map((n: string) => n[0]).join("").slice(0, 2)
@@ -34,12 +37,21 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center text-sm text-[#0f172a] font-bold">✈</div>
           <div className="font-extrabold text-primary tracking-tight">RampBook</div>
         </div>
-        <button 
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="text-primary p-2 focus:outline-none"
-        >
-          {mobileMenuOpen ? "✕" : "☰"}
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={handleLogout}
+            className="w-10 h-10 flex items-center justify-center rounded-lg text-danger hover:bg-danger/10 transition-colors"
+            title="Logout"
+          >
+            <span className="text-xl leading-none">⏻</span>
+          </button>
+          <button 
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="w-10 h-10 flex items-center justify-center text-primary focus:outline-none"
+          >
+            {mobileMenuOpen ? "✕" : "☰"}
+          </button>
+        </div>
       </div>
 
       {/* ── Mobile Menu Overlay ── */}
@@ -114,21 +126,21 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </nav>
 
         {/* User footer */}
-        <div className="p-3 border-t border-white/[0.07]">
-          <div className="flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-elevated transition-colors group cursor-default">
-            <div className="w-8 h-8 rounded-full bg-accent/10 border-2 border-accent/30 flex items-center justify-center text-xs font-bold text-accent flex-shrink-0">
+        <div className="p-4 border-t border-white/[0.07]">
+          <div className="flex items-center gap-3 p-2.5 rounded-xl bg-white/[0.03] border border-white/[0.05] transition-colors group">
+            <div className="w-10 h-10 rounded-full bg-accent/10 border-2 border-accent/20 flex items-center justify-center text-sm font-bold text-accent flex-shrink-0">
               {initials}
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-xs font-semibold text-primary truncate">{me?.full_name ?? "…"}</div>
-              <div className="text-[10px] text-muted capitalize">{me?.role ?? role ?? ""}</div>
+              <div className="text-[13px] font-bold text-primary truncate leading-tight">{me?.full_name ?? "…"}</div>
+              <div className="text-[10px] text-muted capitalize tracking-wide font-medium">{me?.role ?? role ?? ""}</div>
             </div>
             <button
               onClick={handleLogout}
               title="Logout"
-              className="text-muted hover:text-danger transition-colors text-sm opacity-0 group-hover:opacity-100 ml-auto"
+              className="w-10 h-10 flex items-center justify-center rounded-xl bg-danger/10 text-danger hover:bg-danger hover:text-white transition-all duration-200 border border-danger/20"
             >
-              ⏻
+              <span className="text-xl">⏻</span>
             </button>
           </div>
         </div>
@@ -136,6 +148,16 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
       {/* ── Page content ── */}
       <main className="flex-1 min-h-screen pt-16 lg:pt-0 lg:ml-64">{children}</main>
+
+      <ConfirmModal
+        isOpen={showLogoutConfirm}
+        onClose={() => setShowLogoutConfirm(false)}
+        onConfirm={confirmLogout}
+        title="Logout Confirmation"
+        message="Are you sure you want to log out of your account?"
+        confirmLabel="Logout"
+        cancelLabel="Stay logged in"
+      />
     </div>
   );
 }
