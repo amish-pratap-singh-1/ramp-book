@@ -1,5 +1,6 @@
 import { api } from "@/lib/api";
 import type { Reservation } from "@/api/reservations.api";
+import type { User } from "@/api/users.api";
 
 export interface MaintenanceWindow {
   id: number;
@@ -32,5 +33,13 @@ export const adminApi = {
   },
   deleteMaintenance: async (id: number): Promise<void> => {
     await api.delete(`/api/v1/admin/maintenance/${id}`);
+  },
+  listUsers: async (): Promise<User[]> => {
+    const res = await api.get("/api/v1/admin/users");
+    return res.data;
+  },
+  addUser: async (data: any): Promise<User> => {
+    const res = await api.post("/api/v1/admin/users", data);
+    return res.data;
   },
 };

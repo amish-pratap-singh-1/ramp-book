@@ -12,6 +12,13 @@ export interface Aircraft {
   notes?: string;
 }
 
+export interface AircraftScheduleItem {
+  id: number;
+  start_time: string;
+  end_time: string;
+  type: "reservation" | "maintenance";
+}
+
 export interface AircraftCreate {
   tail_number: string;
   model: string;
@@ -28,6 +35,10 @@ export const aircraftApi = {
   },
   get: async (id: number): Promise<Aircraft> => {
     const res = await api.get(`/api/v1/aircraft/${id}`);
+    return res.data;
+  },
+  getSchedule: async (id: number): Promise<AircraftScheduleItem[]> => {
+    const res = await api.get(`/api/v1/aircraft/${id}/schedule`);
     return res.data;
   },
   create: async (data: AircraftCreate): Promise<Aircraft> => {

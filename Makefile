@@ -72,6 +72,16 @@ lint-be:
 	poetry -C $(SERVER_DIR) run pycodestyle src
 	poetry -C $(SERVER_DIR) run pylint src
 
+gen-migration:
+	poetry -C $(SERVER_DIR) run alembic revision --autogenerate -m "auto"
+
+apply-migration:
+	poetry -C $(SERVER_DIR) run alembic upgrade head
+
+seed-be:
+	poetry -C $(SERVER_DIR) run python scripts/seed.py
+
+
 
 # fe
 run-fe:

@@ -12,6 +12,7 @@ from src.schemas.maintenance import (
     MaintenanceWindowResponse,
 )
 from src.schemas.reservation import ReservationResponse
+from src.schemas.user import UserCreate, UserResponse
 from src.svc.errsvc import ResourceNotFoundError, UserNotFoundError
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
@@ -66,3 +67,32 @@ async def delete_maintenance(window_id: int, request: Request) -> None:
     deleted = await maint_repo.delete(window_id)
     if not deleted:
         raise ResourceNotFoundError("Maintenance window not found")
+
+@router.get("/users", response_model=list[UserResponse])
+@protected(UserRole.ADMIN)
+async def list_users(request: Request) -> list[UserResponse]:
+    """List all users (admin only)"""
+    user_id = int(request.state.user["sub"])
+    user = await user_repo.get_by_id(user_id)
+    if not user:
+        raise UserNotFoundError()
+    users = await user_repo.get_all(user.club_id)
+    return [UserResponse.model_validate(u) for u in users]
+
+@router.post("/users", response_model=UserResponse, status_code=201)
+@protected(UserRole.ADMIN)
+async def create_user(data: UserCreate, request: Request) -> UserResponse:
+    """Create a new user (admin only)"""
+    user_id = int(request.state.user["sub"])
+    user = await user_repo.get_by_id(user_id)
+    if not user:
+        raise UserNotFoundError()
+    
+    # Check if email is taken
+    existing = await user_repo.get_by_email(data.email)
+    if existing:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=400, detail="Email already registered")
+        
+    new_user = await user_repo.create(user.club_id, data)
+    return UserResponse.model_validate(new_user)

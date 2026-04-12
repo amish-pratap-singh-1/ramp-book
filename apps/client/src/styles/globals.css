@@ -14,26 +14,26 @@
   --font-sans: 'Inter', system-ui, sans-serif;
 
   /* Backgrounds */
-  --color-base: #0b0f1a;
-  --color-surface: #111827;
-  --color-elevated: #1a2236;
-  --color-card: #1e2a40;
-  --color-card-hover: #243050;
+  --color-base: #0f172a;
+  --color-surface: #1e293b;
+  --color-elevated: #334155;
+  --color-card: #1e293b;
+  --color-card-hover: #334155;
 
   /* Text */
-  --color-primary: #f0f4ff;
-  --color-secondary: #8da0bc;
-  --color-muted: #4a5c78;
+  --color-primary: #f8fafc;
+  --color-secondary: #cbd5e1;
+  --color-muted: #64748b;
 
   /* Borders */
   --color-edge: rgba(255, 255, 255, 0.07);
   --color-edge-strong: rgba(255, 255, 255, 0.14);
 
-  /* Accent (amber) */
-  --color-accent: #f59e0b;
-  --color-accent-hover: #d97706;
-  --color-accent-dim: rgba(245, 158, 11, 0.12);
-  --color-accent-glow: rgba(245, 158, 11, 0.25);
+  /* Accent (trust blue) */
+  --color-accent: #0ea5e9;
+  --color-accent-hover: #0284c7;
+  --color-accent-dim: rgba(14, 165, 233, 0.12);
+  --color-accent-glow: rgba(14, 165, 233, 0.25);
 
   /* Status */
   --color-ok: #10b981;
@@ -58,8 +58,8 @@
 }
 
 body {
-  background-color: #0b0f1a;
-  color: #f0f4ff;
+  background-color: #0f172a;
+  color: #f8fafc;
   font-family: 'Inter', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
@@ -259,4 +259,145 @@ body {
 input:-webkit-autofill {
   -webkit-box-shadow: 0 0 0 1000px #1a2236 inset;
   -webkit-text-fill-color: #f0f4ff;
+}
+
+/* ─── Calendar Overrides (react-big-calendar) ────────────────────────────── */
+
+.rbc-calendar {
+  font-family: inherit;
+  color: var(--color-primary);
+  border-radius: 1rem;
+  overflow: hidden;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-edge);
+}
+
+.rbc-month-view, .rbc-time-view, .rbc-agenda-view {
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  border-bottom: none;
+}
+
+.rbc-header {
+  padding: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  color: var(--color-secondary);
+  border-bottom: 1px solid var(--color-edge) !important;
+  border-left: 1px solid var(--color-edge) !important;
+}
+
+.rbc-header + .rbc-header {
+  border-left: 1px solid var(--color-edge) !important;
+}
+
+.rbc-time-header.rbc-overflowing {
+  border-right: none;
+}
+
+.rbc-day-bg {
+  border-left: 1px solid var(--color-edge) !important;
+}
+
+.rbc-month-row + .rbc-month-row {
+  border-top: 1px solid var(--color-edge) !important;
+}
+
+/* Time Grid specific */
+.rbc-time-content {
+  border-top: 1px solid var(--color-edge);
+}
+
+.rbc-time-content > * + * > * {
+  border-left: 1px solid var(--color-edge) !important;
+}
+
+.rbc-timeslot-group {
+  border-bottom: 1px solid var(--color-edge) !important;
+  min-height: 50px;
+}
+
+.rbc-time-gutter {
+  color: var(--color-muted);
+  font-size: 0.75rem;
+}
+
+.rbc-time-gutter .rbc-timeslot-group {
+  border-bottom: none !important;
+  border-right: 1px solid var(--color-edge) !important;
+}
+
+/* Current time indicator */
+.rbc-current-time-indicator {
+  background-color: var(--color-danger);
+  height: 2px;
+}
+
+/* Events */
+.rbc-event {
+  background-color: var(--color-card-hover);
+  border: 1px solid var(--color-edge);
+  color: var(--color-muted);
+  border-radius: 0.5rem;
+  padding: 2px 5px;
+  cursor: not-allowed;
+}
+
+.rbc-event.rbc-selected {
+  background-color: var(--color-card-hover);
+}
+
+/* Let the 'new reservation drag highlight' be trust blue */
+.rbc-slot-selection {
+  background-color: var(--color-accent-glow);
+}
+
+.rbc-today {
+  background-color: var(--color-elevated) !important;
+}
+
+.rbc-off-range-bg {
+  background-color: transparent !important;
+}
+
+/* Toolbar */
+.rbc-toolbar {
+  padding: 1rem;
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--color-edge);
+  margin-bottom: 0 !important;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.rbc-toolbar button {
+  background-color: transparent;
+  color: var(--color-secondary);
+  border: 1px solid var(--color-edge);
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.rbc-toolbar button:hover {
+  background-color: var(--color-elevated);
+  color: var(--color-primary);
+}
+
+.rbc-toolbar button.rbc-active {
+  background-color: var(--color-accent);
+  color: #fff;
+  border-color: var(--color-accent);
+}
+
+.rbc-toolbar button:active,
+.rbc-toolbar button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-accent-glow);
 }

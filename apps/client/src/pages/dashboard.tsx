@@ -53,25 +53,89 @@ export default function DashboardPage() {
         <div className="page-body space-y-8">
           {/* Stats */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {[
-              { label: "Aircraft Available", value: availableCount, sub: `of ${aircraft.length} total` },
-              { label: "Active Bookings",    value: confirmedCount, sub: "confirmed" },
-              { label: "Flights Completed",  value: completedCount, sub: "this club" },
-              { label: "Next Departure",     value: upcoming[0] ? upcoming[0].aircraft?.tail_number ?? "–" : "None", sub: upcoming[0] ? fmt(upcoming[0].start_time) : "No upcoming flights" },
-            ].map((s) => (
-              <div key={s.label} className="stat-card">
-                <div className="stat-label">{s.label}</div>
-                <div className="stat-value">{s.value}</div>
-                <div className="stat-sub">{s.sub}</div>
-              </div>
-            ))}
+            {me?.role === "admin" ? (
+              <>
+                <div className="stat-card">
+                  <div className="stat-label">Club Flights</div>
+                  <div className="stat-value">{confirmedCount + completedCount}</div>
+                  <div className="stat-sub">total system bookings</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-label">Available Fleet</div>
+                  <div className="stat-value">{availableCount}</div>
+                  <div className="stat-sub">of {aircraft.length} total aircraft</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-label">Maintenance</div>
+                  <div className="stat-value">{aircraft.filter(a => a.status === "maintenance").length}</div>
+                  <div className="stat-sub">aircraft grounded</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-label">Role</div>
+                  <div className="stat-value text-accent">Admin</div>
+                  <div className="stat-sub">Full System Access</div>
+                </div>
+              </>
+            ) : me?.role === "instructor" ? (
+              <>
+                <div className="stat-card">
+                  <div className="stat-label">My Upcoming Lessons</div>
+                  <div className="stat-value">{upcoming.filter(r => r.instructor_id === me.id).length}</div>
+                  <div className="stat-sub">booked to teach</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-label">My Past Flights</div>
+                  <div className="stat-value">{completedCount}</div>
+                  <div className="stat-sub">completed</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-label">Aircraft Available</div>
+                  <div className="stat-value">{availableCount}</div>
+                  <div className="stat-sub">of {aircraft.length} total</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-label">Next Lesson</div>
+                  <div className="stat-value">{upcoming.find(r => r.instructor_id === me.id)?.aircraft?.tail_number ?? "None"}</div>
+                  <div className="stat-sub">{upcoming.find(r => r.instructor_id === me.id) ? fmt(upcoming.find(r => r.instructor_id === me.id)!.start_time) : "No schedule"}</div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="stat-card">
+                  <div className="stat-label">Aircraft Available</div>
+                  <div className="stat-value">{availableCount}</div>
+                  <div className="stat-sub">of {aircraft.length} total</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-label">Active Bookings</div>
+                  <div className="stat-value">{confirmedCount}</div>
+                  <div className="stat-sub">confirmed flights</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-label">Flights Completed</div>
+                  <div className="stat-value">{completedCount}</div>
+                  <div className="stat-sub">this club</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-label">Next Departure</div>
+                  <div className="stat-value">{upcoming[0] ? upcoming[0].aircraft?.tail_number ?? "–" : "None"}</div>
+                  <div className="stat-sub">{upcoming[0] ? fmt(upcoming[0].start_time) : "No upcoming flights"}</div>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Quick actions */}
           <div className="flex gap-3 flex-wrap">
-            <Link href="/reservations/new" className="btn-primary">✈ Book a Flight</Link>
-            <Link href="/fleet"            className="btn-ghost">View Fleet</Link>
-            <Link href="/reservations"     className="btn-ghost">My Bookings</Link>
+            {me?.role !== "admin" && (
+              <Link href="/reservations/new" className="btn-primary">✈ Book a Flight</Link>
+            )}
+            <Link href="/fleet" className="btn-ghost">View Fleet</Link>
+            {me?.role === "admin" ? (
+              <Link href="/admin" className="btn-primary">Manage Users & Fleet</Link>
+            ) : (
+              <Link href="/reservations" className="btn-ghost">My Bookings</Link>
+            )}
           </div>
 
           {/* Upcoming reservations */}

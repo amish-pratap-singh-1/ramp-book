@@ -7,6 +7,17 @@ from pydantic import BaseModel, EmailStr
 from src.entities.user import CertificateType, UserRole
 
 
+class UserCreate(BaseModel):
+    """Schema for creating a new user"""
+
+    email: EmailStr
+    password: str
+    full_name: str
+    role: UserRole
+    certificate: Optional[CertificateType] = None
+    ratings: Optional[str] = None
+
+
 class UserResponse(BaseModel):
     """Schema for user response"""
 

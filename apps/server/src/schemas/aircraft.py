@@ -43,3 +43,11 @@ class AircraftResponse(BaseModel):
     notes: Optional[str] = None
 
     model_config = {"from_attributes": True}
+
+class AircraftScheduleItem(BaseModel):
+    """Schema for a scheduled block (reservation or maintenance)"""
+
+    id: int
+    start_time: str
+    end_time: str
+    type: str # 'reservation' | 'maintenance'

@@ -1,1 +1,2 @@
-Going with int id for saving time 
+1. Going with int id for saving time 
+2. we will store all time in seconds , convert to hobs hr later

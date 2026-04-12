@@ -22,8 +22,9 @@ function toLocal(iso: string) {
 export default function AdminPage() {
   const router = useRouter();
   const qc = useQueryClient();
-  const [tab, setTab] = useState<"reservations" | "maintenance">("reservations");
+  const [tab, setTab] = useState<"reservations" | "maintenance" | "users">("reservations");
   const [showMaintForm, setShowMaintForm] = useState(false);
+  const [showUserForm, setShowUserForm] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -42,6 +43,12 @@ export default function AdminPage() {
   const { data: maintenance = [], isLoading: maintLoading } = useQuery({
     queryKey: ["admin_maintenance"],
     queryFn: adminApi.listMaintenance,
+    enabled: isAuthenticated() && getUserRole() === "admin",
+  });
+
+  const { data: users = [], isLoading: usersLoading } = useQuery({
+    queryKey: ["admin_users"],
+    queryFn: adminApi.listUsers,
     enabled: isAuthenticated() && getUserRole() === "admin",
   });
 
@@ -65,6 +72,15 @@ export default function AdminPage() {
     },
   });
 
+  const createUser = useMutation({
+    mutationFn: adminApi.addUser,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin_users"] });
+      setShowUserForm(false);
+      userForm.reset();
+    },
+  });
+
   const { register, handleSubmit, reset, formState: { errors } } = useForm<{
     aircraft_id: string;
     start_time: string;
@@ -72,7 +88,16 @@ export default function AdminPage() {
     reason: string;
   }>();
 
-  if (resLoading || maintLoading) return <LoadingSpinner fullPage />;
+  const userForm = useForm<{
+    email: string;
+    password: string;
+    full_name: string;
+    role: "member" | "instructor" | "admin";
+  }>({
+    defaultValues: { role: "member" }
+  });
+
+  if (resLoading || maintLoading || usersLoading) return <LoadingSpinner fullPage />;
 
   const onSubmit = (data: { aircraft_id: string; start_time: string; end_time: string; reason: string }) => {
     createMaint.mutate({
@@ -85,6 +110,11 @@ export default function AdminPage() {
 
   const sortedRes = [...reservations].sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime());
   const sortedMaint = [...maintenance].sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime());
+  const sortedUsers = [...users].sort((a, b) => a.full_name.localeCompare(b.full_name));
+
+  const onUserSubmit = (data: any) => {
+    createUser.mutate(data);
+  };
 
   return (
     <>
@@ -104,6 +134,9 @@ export default function AdminPage() {
             </button>
             <button className={tab === "maintenance" ? "tab-active" : "tab"} onClick={() => setTab("maintenance")}>
               Maintenance
+            </button>
+            <button className={tab === "users" ? "tab-active" : "tab"} onClick={() => setTab("users")}>
+              Users
             </button>
           </div>
 
@@ -216,6 +249,85 @@ export default function AdminPage() {
                           </tr>
                         );
                       })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {tab === "users" && (
+            <div className="space-y-6">
+              <div className="flex justify-end">
+                <button onClick={() => setShowUserForm(!showUserForm)} className="btn-primary">
+                  {showUserForm ? "Close Form" : "➕ Add User"}
+                </button>
+              </div>
+
+              {showUserForm && (
+                <div className="card max-w-lg mb-6 shadow-xl border-accent/20">
+                  <h2 className="section-title mb-4">Provision New Account</h2>
+                  {createUser.isError && (
+                    <div className="mb-4 text-sm text-danger bg-danger/10 p-3 rounded">{String((createUser.error as any)?.response?.data?.detail || "Error")}</div>
+                  )}
+                  <form onSubmit={userForm.handleSubmit(onUserSubmit)} className="flex flex-col gap-4">
+                    <div className="field">
+                      <label className="label">Full Name</label>
+                      <input type="text" {...userForm.register("full_name", { required: "Required" })} className="input" />
+                    </div>
+                    <div className="field">
+                      <label className="label">Email</label>
+                      <input type="email" {...userForm.register("email", { required: "Required" })} className="input" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="field">
+                        <label className="label">Password (Temporary)</label>
+                        <input type="password" {...userForm.register("password", { required: "Required" })} className="input" />
+                      </div>
+                      <div className="field">
+                        <label className="label">Role</label>
+                        <select {...userForm.register("role")} className="select-input">
+                          <option value="member">Member</option>
+                          <option value="instructor">Instructor</option>
+                          <option value="admin">Admin</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div className="flex justify-end gap-3 mt-2">
+                      <button type="submit" disabled={createUser.isPending} className="btn-primary">
+                        {createUser.isPending ? "Saving…" : "Create User"}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
+
+              <div className="tbl-wrap">
+                <table className="tbl">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Email</th>
+                      <th>Role</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sortedUsers.length === 0 ? (
+                      <tr><td colSpan={4} className="text-center py-8 text-muted">No users found.</td></tr>
+                    ) : (
+                      sortedUsers.map(u => (
+                        <tr key={u.id}>
+                          <td className="font-bold">{u.full_name}</td>
+                          <td className="text-secondary">{u.email}</td>
+                          <td><StatusBadge status={u.role as any} /></td>
+                          <td>
+                            <span className={`badge ${u.is_active ? 'bg-ok/10 text-ok' : 'bg-danger/10 text-danger'}`}>
+                              {u.is_active ? 'Active' : 'Inactive'}
+                            </span>
+                          </td>
+                        </tr>
+                      ))
                     )}
                   </tbody>
                 </table>

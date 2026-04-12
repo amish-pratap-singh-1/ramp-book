@@ -1,19 +1,28 @@
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Head from "next/head";
 import { useForm } from "react-hook-form";
+import { useQuery } from "@tanstack/react-query";
+import { Calendar, dateFnsLocalizer, SlotInfo, View } from "react-big-calendar";
+import { format, parse, startOfWeek, getDay } from "date-fns";
+import { enUS } from "date-fns/locale";
+
 import Layout from "@/components/Layout";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useCreateReservation } from "@/hooks/useReservations";
 import { useAircraft } from "@/hooks/useAircraft";
 import { useInstructors } from "@/hooks/useInstructors";
 import { isAuthenticated } from "@/lib/auth";
+import { aircraftApi } from "@/api/aircraft.api";
 import type { ReservationCreate } from "@/api/reservations.api";
 
-function toLocal(iso: string) {
-  // Convert yyyy-MM-ddTHH:mm (local) to UTC ISO string
-  return new Date(iso).toISOString();
-}
+const localizer = dateFnsLocalizer({
+  format,
+  parse,
+  startOfWeek,
+  getDay,
+  locales: { "en-US": enUS },
+});
 
 export default function NewReservationPage() {
   const router = useRouter();
@@ -23,36 +32,39 @@ export default function NewReservationPage() {
   const { data: instructors = [] } = useInstructors();
   const create = useCreateReservation();
 
-  const { register, handleSubmit, formState: { errors } } = useForm<{
-    aircraft_id: string;
-    instructor_id: string;
-    start_time: string;
-    end_time: string;
-    notes: string;
-  }>({
-    defaultValues: { aircraft_id: preselect ?? "" },
-  });
+  const [selectedAircraft, setSelectedAircraft] = useState<string>("");
+  const [draftSlot, setDraftSlot] = useState<{ start: Date; end: Date } | null>(null);
+  const [currentDate, setCurrentDate] = useState<Date>(new Date());
+  const [currentView, setCurrentView] = useState<View>("week");
 
+  const { register, handleSubmit } = useForm<{
+    instructor_id: string;
+    notes: string;
+  }>();
+
+  // Set preselect once after hydration
   useEffect(() => {
     if (!isAuthenticated()) router.replace("/login");
-  }, [router]);
+    if (preselect && !selectedAircraft && aircraft.length > 0) {
+      setSelectedAircraft(preselect);
+    }
+  }, [router, preselect, aircraft, selectedAircraft]);
+
+  const { data: schedule = [], isLoading: scheduleLoading } = useQuery({
+    queryKey: ["aircraft_schedule", selectedAircraft],
+    queryFn: () => aircraftApi.getSchedule(parseInt(selectedAircraft)),
+    enabled: !!selectedAircraft,
+  });
 
   if (acLoading) return <LoadingSpinner fullPage />;
 
-  const apiError = (create.error as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
-
-  const onSubmit = async (values: {
-    aircraft_id: string;
-    instructor_id: string;
-    start_time: string;
-    end_time: string;
-    notes: string;
-  }) => {
+  const onSubmit = async (values: { instructor_id: string; notes: string }) => {
+    if (!draftSlot || !selectedAircraft) return;
     const payload: ReservationCreate = {
-      aircraft_id: parseInt(values.aircraft_id),
+      aircraft_id: parseInt(selectedAircraft),
       instructor_id: values.instructor_id ? parseInt(values.instructor_id) : undefined,
-      start_time: toLocal(values.start_time),
-      end_time: toLocal(values.end_time),
+      start_time: draftSlot.start.toISOString(),
+      end_time: draftSlot.end.toISOString(),
       notes: values.notes || undefined,
     };
     await create.mutateAsync(payload);
@@ -60,6 +72,59 @@ export default function NewReservationPage() {
   };
 
   const available = aircraft.filter((a) => a.status === "available");
+  const apiError = (create.error as any)?.response?.data?.detail;
+
+  const events = schedule.map((s) => ({
+    id: `${s.type}-${s.id}`,
+    title: s.type === "maintenance" ? "Maintenance" : "Reserved",
+    start: new Date(s.start_time),
+    end: new Date(s.end_time),
+    isDraft: false,
+    type: s.type,
+  }));
+
+  if (draftSlot) {
+    events.push({
+      id: "draft",
+      title: "New Booking",
+      start: draftSlot.start,
+      end: draftSlot.end,
+      isDraft: true,
+    } as any);
+  }
+
+  const handleSelectSlot = (slotInfo: SlotInfo) => {
+    const overlap = schedule.some((s) => {
+      const sStart = new Date(s.start_time);
+      const sEnd = new Date(s.end_time);
+      return slotInfo.start < sEnd && slotInfo.end > sStart;
+    });
+    if (overlap) {
+      alert("Selected time overlaps with an existing booking or maintenance window.");
+      return;
+    }
+    setDraftSlot({ start: slotInfo.start, end: slotInfo.end });
+  };
+
+  const eventPropGetter = (event: any) => {
+    if (event.isDraft) return { className: "rbc-slot-selection" };
+    
+    // Industry standard status colors natively handled through style properties
+    if (event.type === "maintenance") {
+      return { 
+        className: "rbc-event",
+        style: { backgroundColor: "#ef4444", borderColor: "#b91c1c", color: "#ffffff" } 
+      };
+    }
+    if (event.type === "reservation") {
+      return { 
+        className: "rbc-event",
+        style: { backgroundColor: "#38bdf8", borderColor: "#0284c7", color: "#ffffff" } 
+      };
+    }
+    
+    return { className: "rbc-event" };
+  };
 
   return (
     <>
@@ -69,100 +134,130 @@ export default function NewReservationPage() {
       <Layout>
         <div className="page-header">
           <h1 className="page-title">New Booking</h1>
-          <p className="page-sub">Reserve an aircraft for your next flight</p>
+          <p className="page-sub">Select an aircraft and drag across the calendar to reserve</p>
         </div>
 
         <div className="page-body">
-          <div className="max-w-lg">
-            <form onSubmit={handleSubmit(onSubmit)} id="new-reservation-form" className="flex flex-col gap-5">
-
-              {/* Aircraft */}
+          <div className="flex flex-col xl:flex-row gap-8">
+            <div className="flex-1 min-w-0 bg-surface border border-edge rounded-2xl p-5 flex flex-col gap-4 shadow-xl">
               <div className="field">
-                <label className="label" htmlFor="aircraft_id">Aircraft *</label>
+                <label className="label">1. Select Aircraft</label>
                 <select
-                  id="aircraft_id"
-                  {...register("aircraft_id", { required: "Select an aircraft" })}
-                  className="select-input"
+                  value={selectedAircraft}
+                  onChange={(e) => {
+                    setSelectedAircraft(e.target.value);
+                    setDraftSlot(null);
+                    setCurrentDate(new Date()); // Reset the calendar when aircraft changes
+                    setCurrentView("week");
+                  }}
+                  className="select-input max-w-sm"
                 >
-                  <option value="">— Select aircraft —</option>
+                  <option value="">— Choose an aircraft —</option>
                   {available.map((a) => (
-                    <option key={a.id} value={a.id}>
+                    <option key={a.id} value={String(a.id)}>
                       {a.tail_number} · {a.model} (${a.hourly_rate_usd}/hr)
                     </option>
                   ))}
                 </select>
-                {errors.aircraft_id && <p className="err">{errors.aircraft_id.message}</p>}
               </div>
 
-              {/* Date/time range */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="field">
-                  <label className="label" htmlFor="start_time">Departure *</label>
-                  <input
-                    id="start_time"
-                    type="datetime-local"
-                    {...register("start_time", { required: "Required" })}
-                    className="input"
+              {selectedAircraft ? (
+                <div className="h-[750px] mt-4 relative">
+                  {scheduleLoading && (
+                    <div className="absolute inset-0 bg-surface/50 z-10 flex items-center justify-center">
+                      <LoadingSpinner />
+                    </div>
+                  )}
+                  <Calendar
+                    localizer={localizer}
+                    events={events}
+                    startAccessor="start"
+                    endAccessor="end"
+                    date={currentDate}
+                    onNavigate={(date) => setCurrentDate(date)}
+                    view={currentView}
+                    onView={(view) => setCurrentView(view)}
+                    views={["week", "day"]}
+                    selectable
+                    onSelectSlot={handleSelectSlot}
+                    eventPropGetter={eventPropGetter}
+                    step={30}
+                    timeslots={2}
+                    min={new Date(0, 0, 0, 6, 0, 0)} // Starts at 6 AM
+                    max={new Date(0, 0, 0, 22, 0, 0)} // Ends at 10 PM
                   />
-                  {errors.start_time && <p className="err">{errors.start_time.message}</p>}
                 </div>
-                <div className="field">
-                  <label className="label" htmlFor="end_time">Return *</label>
-                  <input
-                    id="end_time"
-                    type="datetime-local"
-                    {...register("end_time", { required: "Required" })}
-                    className="input"
-                  />
-                  {errors.end_time && <p className="err">{errors.end_time.message}</p>}
-                </div>
-              </div>
-
-              {/* Instructor */}
-              <div className="field">
-                <label className="label" htmlFor="instructor_id">Instructor <span className="text-muted font-normal normal-case">(optional)</span></label>
-                <select id="instructor_id" {...register("instructor_id")} className="select-input">
-                  <option value="">— No instructor (solo) —</option>
-                  {instructors.map((i) => (
-                    <option key={i.id} value={i.id}>
-                      {i.full_name} · {i.ratings ?? "CFI"}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Notes */}
-              <div className="field">
-                <label className="label" htmlFor="notes">Notes <span className="text-muted font-normal normal-case">(optional)</span></label>
-                <textarea
-                  id="notes"
-                  {...register("notes")}
-                  rows={3}
-                  placeholder="e.g. IFR practice, cross-country to KDAL…"
-                  className="input resize-none"
-                />
-              </div>
-
-              {/* API error */}
-              {create.isError && (
-                <div className="bg-danger/10 border border-danger/20 rounded-xl px-4 py-3 text-sm text-danger">
-                  {apiError ?? "Booking failed — check for conflicts"}
+              ) : (
+                <div className="h-[400px] border border-edge border-dashed rounded-xl flex items-center justify-center text-muted mt-4">
+                  Select an aircraft to view availability
                 </div>
               )}
+            </div>
 
-              {/* Submit */}
-              <div className="flex gap-3 pt-2">
-                <button
-                  type="submit"
-                  id="submit-reservation"
-                  disabled={create.isPending}
-                  className="btn-primary"
-                >
-                  {create.isPending ? "Booking…" : "Confirm Booking →"}
-                </button>
-                <button type="button" onClick={() => router.back()} className="btn-ghost">Cancel</button>
+            <div className="w-full xl:w-96 flex-shrink-0">
+              <div className="card sticky top-24 shadow-2xl border-accent/20">
+                <h2 className="section-title mb-6">2. Confirm Details</h2>
+
+                {!draftSlot ? (
+                  <div className="text-secondary text-sm flex items-start gap-4 p-4 bg-base rounded-xl border border-edge">
+                    <div className="w-10 h-10 rounded-full bg-surface border border-edge flex items-center justify-center text-xl flex-shrink-0 mt-1">
+                      👆
+                    </div>
+                    <div>
+                      <div className="font-bold text-primary mb-1">Pick a time slot</div>
+                      Drag your cursor across empty spaces on the calendar grid to block off your preferred departure and return times.
+                    </div>
+                  </div>
+                ) : (
+                  <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
+                    <div className="bg-base p-4 rounded-xl border border-edge">
+                      <div className="text-[10px] font-bold text-muted uppercase tracking-widest mb-2">Selected Window</div>
+                      <div className="text-primary font-bold text-lg mb-1">{format(draftSlot.start, "MMM do, yyyy")}</div>
+                      <div className="text-secondary text-sm">
+                        {format(draftSlot.start, "h:mm a")} <span className="mx-2 text-muted">→</span> {format(draftSlot.end, "h:mm a")}
+                      </div>
+                    </div>
+
+                    <div className="field">
+                      <label className="label">Flight Instructor <span className="text-muted font-normal normal-case">(optional)</span></label>
+                      <select {...register("instructor_id")} className="select-input">
+                        <option value="">— No instructor (solo) —</option>
+                        {instructors.map((i) => (
+                          <option key={i.id} value={String(i.id)}>
+                            {i.full_name} · {i.ratings ?? "CFI"}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="field">
+                      <label className="label">Flight Notes <span className="text-muted font-normal normal-case">(optional)</span></label>
+                      <textarea
+                        {...register("notes")}
+                        className="input resize-none"
+                        rows={3}
+                        placeholder="e.g. IFR practice, cross-country to KDAL…"
+                      />
+                    </div>
+
+                    {create.isError && (
+                      <div className="bg-danger/10 border border-danger/20 rounded-xl px-4 py-3 text-sm text-danger">
+                        {apiError ?? "Booking failed — double booking detected."}
+                      </div>
+                    )}
+
+                    <div className="mt-2 pt-4 border-t border-edge flex flex-col gap-3">
+                      <button type="submit" disabled={create.isPending} className="btn-primary w-full justify-center">
+                        {create.isPending ? "Validating & Booking…" : "Confirm Booking →"}
+                      </button>
+                      <button type="button" onClick={() => setDraftSlot(null)} className="btn-ghost w-full justify-center text-secondary">
+                        Discard & Reselect Time
+                      </button>
+                    </div>
+                  </form>
+                )}
               </div>
-            </form>
+            </div>
           </div>
         </div>
       </Layout>

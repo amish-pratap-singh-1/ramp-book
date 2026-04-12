@@ -6,7 +6,7 @@ from src.decorators.auth import protected
 from src.entities.user import UserRole
 from src.repositories.aircraft import AircraftRepository
 from src.repositories.users import UserRepository
-from src.schemas.aircraft import AircraftCreate, AircraftResponse, AircraftUpdate
+from src.schemas.aircraft import AircraftCreate, AircraftResponse, AircraftScheduleItem, AircraftUpdate
 from src.svc.errsvc import ResourceNotFoundError, UserNotFoundError
 
 router = APIRouter(prefix="/aircraft", tags=["Aircraft"])
@@ -35,6 +35,17 @@ async def get_aircraft(aircraft_id: int, request: Request) -> AircraftResponse:
     if not aircraft:
         raise ResourceNotFoundError("Aircraft not found")
     return AircraftResponse.model_validate(aircraft)
+
+
+@router.get("/{aircraft_id}/schedule", response_model=list[AircraftScheduleItem])
+@protected()
+async def get_aircraft_schedule(aircraft_id: int, request: Request) -> list[AircraftScheduleItem]:
+    """Get non-identifying overlap schedule for an aircraft to power UI blocking"""
+    aircraft = await aircraft_repo.get_by_id(aircraft_id)
+    if not aircraft:
+        raise ResourceNotFoundError("Aircraft not found")
+    # All authenticated users can view an aircraft schedule structure (times)
+    return await aircraft_repo.get_schedule(aircraft_id)
 
 
 @router.post("/", response_model=AircraftResponse, status_code=201)
