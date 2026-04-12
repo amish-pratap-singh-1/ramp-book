@@ -9,7 +9,8 @@ from src.repositories.reservations import ReservationRepository
 from src.repositories.users import UserRepository
 from src.schemas.reservation import (FlightCompleteRequest, ReservationCreate,
                                      ReservationUpdate)
-from src.svc.errsvc import ConflictError, ForbiddenError, ResourceNotFoundError
+from src.svc.errsvc import (BadRequestError, ConflictError, ForbiddenError,
+                            ResourceNotFoundError)
 
 logger = logging.getLogger(__name__)
 
@@ -82,7 +83,10 @@ class ReservationSvc:
                     "Selected instructor is already booked in that time window"
                 )
 
-        return await self.res_repo.create(club_id, user_id, data)
+        try:
+            return await self.res_repo.create(club_id, user_id, data)
+        except ResourceNotFoundError as e:
+            raise BadRequestError(detail=e.detail) from e
 
     async def update_reservation(
         self,
@@ -141,7 +145,10 @@ class ReservationSvc:
                     "Selected instructor is already booked in that time window"
                 )
 
-        return await self.res_repo.update(reservation_id, data)
+        try:
+            return await self.res_repo.update(reservation_id, data)
+        except ResourceNotFoundError as e:
+            raise BadRequestError(detail=e.detail) from e
 
     async def cancel_reservation(
         self, reservation_id: int, user_id: int, role: str

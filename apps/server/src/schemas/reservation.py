@@ -65,6 +65,13 @@ class FlightCompleteRequest(BaseModel):
     hobbs_end: float
 
     @model_validator(mode="after")
+    def round_hours(self) -> "FlightCompleteRequest":
+        """Round to 2 decimals"""
+        self.hobbs_start = round(self.hobbs_start, 2)
+        self.hobbs_end = round(self.hobbs_end, 2)
+        return self
+
+    @model_validator(mode="after")
     def end_after_start(self) -> "FlightCompleteRequest":
         """Time constraint check"""
         if self.hobbs_end <= self.hobbs_start:

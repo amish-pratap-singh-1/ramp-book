@@ -9,9 +9,11 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import selectinload
 
 from src.entities.aircraft import Aircraft
+from src.entities.user import User
 from src.entities.reservation import Reservation, ReservationStatus
 from src.schemas.reservation import ReservationCreate, ReservationUpdate
 from src.svc.dbsvc import DbSvc
+from src.svc.errsvc import ResourceNotFoundError
 
 logger = logging.getLogger(__name__)
 
@@ -128,6 +130,24 @@ class ReservationRepository:
         """Create a new reservation"""
         try:
             async with self.db_svc.get_sessionmaker()() as session:
+                # 1. Verify Aircraft exists
+                if data.aircraft_id is not None:
+                    ac_stmt = select(Aircraft).where(Aircraft.id == data.aircraft_id)
+                    ac_result = await session.execute(ac_stmt)
+                    if not ac_result.scalar_one_or_none():
+                        raise ResourceNotFoundError(
+                            f"Aircraft with ID {data.aircraft_id} not found"
+                        )
+
+                # 2. Verify Instructor exists (if provided)
+                if data.instructor_id is not None:
+                    inst_stmt = select(User).where(User.id == data.instructor_id)
+                    inst_result = await session.execute(inst_stmt)
+                    if not inst_result.scalar_one_or_none():
+                        raise ResourceNotFoundError(
+                            f"Instructor with ID {data.instructor_id} not found"
+                        )
+
                 reservation = Reservation(
                     club_id=club_id,
                     member_id=member_id,
@@ -161,6 +181,18 @@ class ReservationRepository:
                 reservation = result.scalar_one_or_none()
                 if not reservation:
                     return None
+
+                # Verify Instructor exists (if provided)
+                if "instructor_id" in data.model_dump(exclude_none=True):
+                    val = data.instructor_id
+                    if val is not None:
+                        inst_stmt = select(User).where(User.id == val)
+                        inst_result = await session.execute(inst_stmt)
+                        if not inst_result.scalar_one_or_none():
+                            raise ResourceNotFoundError(
+                                f"Instructor with ID {val} not found"
+                            )
+
                 for field, value in data.model_dump(exclude_none=True).items():
                     setattr(reservation, field, value)
                 await session.commit()
@@ -212,7 +244,10 @@ class ReservationRepository:
                 )
                 aircraft = ac_result.scalar_one_or_none()
                 if aircraft:
-                    aircraft.total_hobbs_hours += hobbs_end - hobbs_start
+                    # Round to 2 decimal places to prevent floating-point drift
+                    aircraft.total_hobbs_hours = round(
+                        aircraft.total_hobbs_hours + (hobbs_end - hobbs_start), 2
+                    )
 
                 await session.commit()
                 logger.info("Reservation completed: %s", reservation_id)

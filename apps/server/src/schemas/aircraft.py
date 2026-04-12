@@ -2,7 +2,7 @@
 
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, model_validator
 
 from src.entities.aircraft import AircraftStatus
 from src.schemas.meta import Pagination
@@ -17,6 +17,13 @@ class AircraftCreate(BaseModel):
     hourly_rate_usd: float
     total_hobbs_hours: float = 0.0
     notes: Optional[str] = None
+
+    @model_validator(mode="after")
+    def round_values(self) -> "AircraftCreate":
+        """Round to 2 decimals"""
+        self.hourly_rate_usd = round(self.hourly_rate_usd, 2)
+        self.total_hobbs_hours = round(self.total_hobbs_hours, 2)
+        return self
 
 
 class AircraftCreateRequest(BaseModel):
@@ -34,6 +41,15 @@ class AircraftUpdate(BaseModel):
     total_hobbs_hours: Optional[float] = None
     status: Optional[AircraftStatus] = None
     notes: Optional[str] = None
+
+    @model_validator(mode="after")
+    def round_values(self) -> "AircraftUpdate":
+        """Round to 2 decimals if provided"""
+        if self.hourly_rate_usd is not None:
+            self.hourly_rate_usd = round(self.hourly_rate_usd, 2)
+        if self.total_hobbs_hours is not None:
+            self.total_hobbs_hours = round(self.total_hobbs_hours, 2)
+        return self
 
 
 class AircraftUpdateRequest(BaseModel):
