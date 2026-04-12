@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
+import { useQueryClient } from "@tanstack/react-query";
 import { clearToken, getUserRole } from "@/lib/auth";
 import { useMe } from "@/hooks/useMe";
 import ConfirmModal from "./ConfirmModal";
@@ -16,6 +17,7 @@ const adminNav = [
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { data: meData } = useMe();
   const me = meData?.user;
   const role = getUserRole();
@@ -23,7 +25,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const handleLogout = () => { setShowLogoutConfirm(true); };
-  const confirmLogout = () => { clearToken(); router.push("/login"); };
+  const confirmLogout = () => { 
+    clearToken(); 
+    queryClient.clear();
+    router.push("/login"); 
+  };
 
   const initials = me?.full_name
     ? me.full_name.split(" ").map((n: string) => n[0]).join("").slice(0, 2)

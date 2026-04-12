@@ -1,2 +1,30 @@
-1. Going with int id for saving time 
-2. we will store all time in seconds , convert to hobs hr later
+1. Monorepo setup (define the object definition once use in front end as well)
+    - used openapi.json
+    - openapi-typescript library for creating interfaces
+    - apps/server contains entire FastAPI setup
+    - apps/client contains entire Client setup
+
+
+2. Going with int id for saving time
+
+3. Server architecture 
+    - RBAC for (member, instructor, admin)
+    - api layer 
+    - svc layer
+    - repositories
+    - entities
+
+    - it only has error and info logs for now
+
+4. member, instructor, admin all are users with different roles
+
+5. postgres root user vs app user 
+    - restricted access to app user (only app-db access)
+
+6. Client architecture
+    - Nestjs client
+    - axios
+    - react hook form 
+    - tanstack query for api calls
+    - react-big-calender 
+    - sonner for toast

@@ -22,7 +22,7 @@ services:
     depends_on:
       - postgres
     restart: always
-  frontend:
+  client:
     build:
       context: ./apps/client
       dockerfile: Dockerfile

@@ -53,45 +53,58 @@ const AircraftCalendar: React.FC<AircraftCalendarProps> = ({
   onSelectSlot,
   onSelectEvent,
   isLoading,
-  minTime = new Date(0, 0, 0, 6, 0, 0),
-  maxTime = new Date(0, 0, 0, 22, 0, 0),
+  minTime = new Date(2024, 0, 1, 0, 0, 0),
+  maxTime = new Date(2024, 0, 1, 23, 59, 59),
   selectable = true,
   height = 750,
 }) => {
   const eventPropGetter = (event: CalendarEvent) => {
     if (event.isDraft) {
       if (event.type === "maintenance") {
-        return { 
+        return {
           className: "rbc-event-draft-maintenance",
-          style: { backgroundColor: "rgba(239, 68, 68, 0.4)", border: "2px dashed #b91c1c", color: "#000" } 
+          style: {
+            backgroundColor: "rgba(239, 68, 68, 0.4)",
+            border: "2px dashed #b91c1c",
+            color: "#000",
+          },
         };
       }
-      return { 
+      return {
         className: "rbc-event-draft",
-        style: { backgroundColor: "rgba(56, 189, 248, 0.4)", border: "2px dashed #0ea5e9", color: "#000" } 
+        style: {
+          backgroundColor: "rgba(56, 189, 248, 0.4)",
+          border: "2px dashed #0ea5e9",
+          color: "#000",
+        },
       };
     }
-    
+
     if (event.type === "maintenance") {
-      return { 
+      return {
         className: "rbc-event-maintenance",
-        style: { 
-          backgroundColor: "#ef4444", 
-          backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,0.05) 10px, rgba(0,0,0,0.05) 20px)",
-          borderColor: "#991b1b", 
+        style: {
+          backgroundColor: "#ef4444",
+          backgroundImage:
+            "repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,0.05) 10px, rgba(0,0,0,0.05) 20px)",
+          borderColor: "#991b1b",
           color: "#ffffff",
           fontWeight: "bold",
-        } 
+        },
       };
     }
-    
+
     if (event.type === "reservation") {
-      return { 
+      return {
         className: "rbc-event-reservation",
-        style: { backgroundColor: "#38bdf8", borderColor: "#0284c7", color: "#ffffff" } 
+        style: {
+          backgroundColor: "#38bdf8",
+          borderColor: "#0284c7",
+          color: "#ffffff",
+        },
       };
     }
-    
+
     return { className: "rbc-event" };
   };
 

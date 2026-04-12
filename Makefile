@@ -3,60 +3,6 @@ CLIENT_DIR=apps/client
 
 OPENAPI_URL=http://localhost:8000/openapi.json
 
-install-backend:
-	poetry -C $(SERVER_DIR) install
-
-run-backend:
-	poetry -C $(SERVER_DIR) run uvicorn app.main:app --reload
-
-test-backend:
-	poetry -C $(SERVER_DIR) run pytest
-
-lint-backend:
-	poetry -C $(SERVER_DIR) run ruff check .
-
-format-backend:
-	poetry -C $(SERVER_DIR) run black .
-	poetry -C $(SERVER_DIR) run isort .
-
-
-install-frontend:
-	cd $(CLIENT_DIR) && npm install
-
-run-frontend:
-	cd $(CLIENT_DIR) && npm run dev
-
-build-frontend:
-	cd $(CLIENT_DIR) && npm run build
-
-openapi-gen:
-	cd $(CLIENT_DIR) && npx openapi-typescript $(OPENAPI_URL) -o src/api/schema.d.ts
-
-
-setup:
-	make install-backend
-	make install-frontend
-
-dev-backend:
-	make run-backend
-
-dev-frontend:
-	make run-frontend
-
-dev:
-	make -j 2 run-backend run-frontend
-
-
-gen-api:
-	make run-backend & sleep 5 && make openapi-gen
-
-
-clean:
-	find . -name "__pycache__" -type d -exec rm -rf {} +
-	rm -rf apps/client/.next
-	rm -rf apps/server/.pytest_cache
-
-# currently being used
 # generate contract
 gen-ts:
 	cd $(CLIENT_DIR) && pnpm openapi-typescript http://localhost:8000/openapi.json -o src/api/schema.d.ts
@@ -91,5 +37,34 @@ build-fe:
 	cd $(CLIENT_DIR) && pnpm run build
 
 # db
-run-db:
-	docker compose up postgres
+
+# project
+run-project:
+	# Setup db
+	docker compose up --build -d postgres
+
+	# Wait for DB using container
+	until docker compose exec postgres pg_isready -U postgres; do \
+		echo "Waiting for Postgres..."; \
+		sleep 2; \
+	done
+
+	# Setup python
+	poetry -C $(SERVER_DIR) install
+
+	# Run Migration on db
+	poetry -C $(SERVER_DIR) run alembic upgrade head
+
+	# Seed data on db
+	poetry -C $(SERVER_DIR) run python scripts/seed.py
+
+	# Run backend
+	docker compose up --build -d server
+
+	# Run client
+	docker compose up --build -d client
+
+
+
+dev-project:
+	dev commands
