@@ -19,10 +19,10 @@ class SeshSvc:
 
     async def login(self, req: LoginRequest) -> TokenResponse:
         """login method"""
-        user = await self.user_repo.get_by_email(req.email)
+        user = await self.user_repo.get_by_email(req.user.email)
 
         if not user or not self.sec_svc.verify_password(
-            req.password, user.hashed_password
+            req.user.password, user.hashed_password
         ):
             raise InvalidCredentialsError()
 
@@ -37,6 +37,8 @@ class SeshSvc:
         )
 
         return TokenResponse(
-            access_token=token,
-            expires_in=self.sec_svc.get_appenv().access_token_expire_seconds,
+            user={
+                "access_token": token,
+                "expires_in": self.sec_svc.get_appenv().access_token_expire_seconds,
+            }
         )

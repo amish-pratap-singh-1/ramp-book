@@ -1,0 +1,28 @@
+/api/v1/health
+200
+{
+  "status": "ok",
+  "message": "server is healthy"
+}
+
+/api/v1/login
+req
+{
+  "user": {
+    "email": "user@example.com",
+    "password": "string"
+  }
+}
+res
+{
+  "user": {
+    "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNSIsInJvbGUiOiJpbnN0cnVjdG9yIiwiZXhwIjoxNzc1OTk3NTc5LCJpYXQiOjE3NzU5Njg3Nzl9.iQKZZE-A2m5wMhNcBSo8YqEbhmltaYGp4rar6SvyOLg",
+    "token_type": "bearer",
+    "expires_in": 28800
+  }
+}
+401
+{
+  "error": "InvalidCredentialsError",
+  "detail": "Incorrect username or password"
+}

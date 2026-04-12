@@ -1,9 +1,6 @@
 """Authentication api"""
 
-from fastapi import APIRouter, Request
-
-from src.decorators.auth import protected
-from src.entities.user import UserRole
+from fastapi import APIRouter
 from src.schemas.auth import LoginRequest, TokenResponse
 from src.svc.seshsvc import SeshSvc
 

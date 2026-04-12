@@ -3,16 +3,24 @@
 from pydantic import BaseModel, EmailStr
 
 
-class LoginRequest(BaseModel):
-    """Login request body"""
-
+class UserLoginData(BaseModel):
+    """User login data"""
     email: EmailStr
     password: str
 
 
-class TokenResponse(BaseModel):
-    """Login response body"""
+class LoginRequest(BaseModel):
+    """Login request body"""
+    user: UserLoginData
 
+
+class UserTokenData(BaseModel):
+    """User token data"""
     access_token: str
     token_type: str = "bearer"
     expires_in: int
+
+
+class TokenResponse(BaseModel):
+    """Login response body"""
+    user: UserTokenData
