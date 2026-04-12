@@ -12,6 +12,7 @@ import { adminApi } from "@/api/admin.api";
 import { useAircraft } from "@/hooks/useAircraft";
 import { isAuthenticated, getUserRole } from "@/lib/auth";
 import AircraftCalendar, { CalendarEvent, CalendarResource } from "@/components/AircraftCalendar";
+import AircraftMaintenanceCard from "@/components/AircraftMaintenanceCard";
 import { View } from "react-big-calendar";
 import type { components } from "@/api/schema";
 import { formatDateForInput, formatDateForAPI, formatDisplay } from "@/lib/date-utils";
@@ -25,6 +26,9 @@ export default function AdminPage() {
   const [maintToDelete, setMaintToDelete] = useState<number | null>(null);
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [currentView, setCurrentView] = useState<View>("day");
+  const [selectedAircraftMaint, setSelectedAircraftMaint] = useState<string>("");
+  const [draftMaintSlot, setDraftMaintSlot] = useState<{ start: Date; end: Date } | null>(null);
+  const [selectedMaintEventId, setSelectedMaintEventId] = useState<number | null>(null);
 
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -34,6 +38,7 @@ export default function AdminPage() {
     }
   }, [router]);
 
+
   const { data: reservationsData, isLoading: resLoading } = useQuery({
     queryKey: ["admin_reservations"],
     queryFn: () => adminApi.allReservations(),
@@ -42,8 +47,8 @@ export default function AdminPage() {
   const reservations = reservationsData?.reservations ?? [];
 
   const { data: maintenanceData, isLoading: maintLoading } = useQuery({
-    queryKey: ["admin_maintenance"],
-    queryFn: () => adminApi.listMaintenance(),
+    queryKey: ["admin_maintenance", selectedAircraftMaint],
+    queryFn: () => adminApi.listMaintenance(selectedAircraftMaint ? parseInt(selectedAircraftMaint) : undefined),
     enabled: isAuthenticated() && getUserRole() === "admin",
   });
   const maintenance = maintenanceData?.maintenance_windows ?? [];
@@ -58,12 +63,20 @@ export default function AdminPage() {
   const { data: aircraftData } = useAircraft();
   const aircraft = aircraftData?.aircraft ?? [];
 
+  // Handle default maintenance aircraft selection
+  useEffect(() => {
+    if (tab === "maintenance" && !selectedAircraftMaint && aircraft.length > 0) {
+      setSelectedAircraftMaint(aircraft[0].id.toString());
+    }
+  }, [tab, aircraft, selectedAircraftMaint]);
+
   const createMaint = useMutation({
     mutationFn: (data: components["schemas"]["MaintenanceWindowCreateRequest"]) => adminApi.addMaintenance(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin_maintenance"] });
+      qc.invalidateQueries({ queryKey: ["admin_all_reservations"] });
       qc.invalidateQueries({ queryKey: ["aircraft"] });
-      setShowMaintForm(false);
+      setDraftMaintSlot(null);
       reset();
     },
   });
@@ -74,6 +87,7 @@ export default function AdminPage() {
       qc.invalidateQueries({ queryKey: ["admin_maintenance"] });
       qc.invalidateQueries({ queryKey: ["aircraft"] });
       setMaintToDelete(null);
+      setSelectedMaintEventId(null);
     },
   });
 
@@ -113,7 +127,9 @@ export default function AdminPage() {
     queryFn: () => adminApi.allReservations(),
     enabled: tab === "maintenance",
   });
-  const allReservations = allResData?.reservations ?? [];
+  const allReservations = (allResData?.reservations ?? []).filter(r => 
+    (!selectedAircraftMaint || r.aircraft_id === parseInt(selectedAircraftMaint)) && r.status === "confirmed"
+  );
 
   const calendarEvents: CalendarEvent[] = [
     ...allReservations.map(r => ({
@@ -131,22 +147,53 @@ export default function AdminPage() {
       end: new Date(m.end_time),
       type: "maintenance" as const,
       resourceId: m.aircraft_id,
-    }))
+    })),
   ];
 
-  const calendarResources: CalendarResource[] = aircraft.map(a => ({
-    id: a.id,
-    title: a.tail_number,
-  }));
+  if (draftMaintSlot) {
+    calendarEvents.push({
+      id: "draft-maint",
+      title: "New Window",
+      start: draftMaintSlot.start,
+      end: draftMaintSlot.end,
+      isDraft: true,
+      type: "maintenance"
+    });
+  }
+
+  const calendarResources: CalendarResource[] = aircraft
+    .filter(a => !selectedAircraftMaint || a.id === parseInt(selectedAircraftMaint))
+    .map(a => ({
+      id: a.id,
+      title: a.tail_number,
+    }));
 
   const handleSelectSlot = (slotInfo: any) => {
-    setShowMaintForm(true);
+    setDraftMaintSlot({ start: slotInfo.start, end: slotInfo.end });
+    setSelectedMaintEventId(null);
     reset({
-      aircraft_id: slotInfo.resourceId?.toString() ?? "",
+      aircraft_id: selectedAircraftMaint || slotInfo.resourceId?.toString() || "",
       start_time: formatDateForInput(slotInfo.start),
       end_time: formatDateForInput(slotInfo.end),
       reason: "",
     });
+  };
+
+  const handleSelectEvent = (event: CalendarEvent) => {
+    if (event.type === "maintenance" && typeof event.id === "string" && event.id.startsWith("maint-")) {
+      const id = parseInt(event.id.replace("maint-", ""));
+      const m = maintenance.find(item => item.id === id);
+      if (m) {
+        setSelectedMaintEventId(id);
+        setDraftMaintSlot(null);
+        reset({
+          aircraft_id: m.aircraft_id.toString(),
+          start_time: formatDateForInput(m.start_time),
+          end_time: formatDateForInput(m.end_time),
+          reason: m.reason || "",
+        });
+      }
+    }
   };
 
   const onSubmit = (data: { aircraft_id: string; start_time: string; end_time: string; reason: string }) => {
@@ -159,6 +206,8 @@ export default function AdminPage() {
       }
     });
   };
+
+  const selectedMaintenance = selectedMaintEventId ? maintenance.find(m => m.id === selectedMaintEventId) : null;
 
   const sortedRes = [...reservations].sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime());
   const sortedMaint = [...maintenance].sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime());
@@ -230,104 +279,147 @@ export default function AdminPage() {
 
             {tab === "maintenance" && (
               <div className="space-y-6">
-                <div className="flex justify-end">
-                  <button onClick={() => setShowMaintForm(!showMaintForm)} className="btn-primary">
-                    {showMaintForm ? "Close Form" : "➕ Add Maintenance Window"}
-                  </button>
-                </div>
-
-                {showMaintForm && (
-                  <div className="card max-w-lg mb-6 shadow-xl border-accent/20">
-                    <h2 className="section-title mb-4">New Maintenance Window</h2>
-                    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-                      <div className="field">
-                        <label className="label">Aircraft</label>
-                        <select {...register("aircraft_id", { required: "Required" })} className="select-input">
-                          <option value="">— Select Aircraft —</option>
-                          {aircraft.map(a => <option key={a.id} value={a.id}>{a.tail_number}</option>)}
+                <div className="flex flex-col xl:flex-row gap-8">
+                  {/* Left Column: Selector & Details */}
+                  <div className="w-full xl:w-96 flex-shrink-0 order-2 xl:order-1">
+                    <div className="card sticky top-24 shadow-2xl border-edge-strong bg-surface/50 backdrop-blur-md">
+                      <div className="field mb-6">
+                        <label className="label">1. Select Aircraft</label>
+                        <select
+                          value={selectedAircraftMaint}
+                          onChange={(e) => {
+                            setSelectedAircraftMaint(e.target.value);
+                            setDraftMaintSlot(null);
+                            setSelectedMaintEventId(null);
+                          }}
+                          className="select-input !bg-base/50"
+                        >
+                          {aircraft.map(a => <option key={a.id} value={a.id.toString()}>{a.tail_number} · {a.model}</option>)}
                         </select>
-                        {errors.aircraft_id && <p className="err">{errors.aircraft_id.message}</p>}
                       </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="field">
-                          <label className="label">Start</label>
-                          <input type="datetime-local" {...register("start_time", { required: "Required" })} className="input" />
-                        </div>
-                        <div className="field">
-                          <label className="label">End</label>
-                          <input type="datetime-local" {...register("end_time", { required: "Required" })} className="input" />
-                        </div>
-                      </div>
-                      <div className="field">
-                        <label className="label">Reason</label>
-                        <input type="text" {...register("reason")} placeholder="e.g. 100-hour inspection" className="input" />
-                      </div>
-                      <div className="flex justify-end gap-3 mt-2">
-                        <button type="button" onClick={() => setShowMaintForm(false)} className="btn-ghost">Cancel</button>
-                        <button type="submit" disabled={createMaint.isPending} className="btn-primary">
-                          {createMaint.isPending ? "Saving…" : "Save"}
-                        </button>
-                      </div>
-                    </form>
-                  </div>
-                )}
 
-                <div className="bg-surface border border-edge rounded-2xl p-5 shadow-xl">
-                  <div className="mb-4">
-                    <h2 className="text-xl font-bold">Fleet Maintenance Schedule</h2>
-                    <p className="text-secondary text-sm">View and manage technical windows across all aircraft</p>
-                  </div>
-                  <AircraftCalendar
-                    events={calendarEvents}
-                    resources={calendarResources}
-                    date={currentDate}
-                    onDateChange={setCurrentDate}
-                    view={currentView}
-                    onViewChange={setCurrentView}
-                    onSelectSlot={handleSelectSlot}
-                    isLoading={maintLoading}
-                  />
-                </div>
+                      {selectedAircraftMaint ? (
+                        <div className="space-y-6">
+                          <div className="h-px bg-edge-strong"></div>
+                          
+                          {!draftMaintSlot && !selectedMaintEventId ? (
+                            <div className="bg-base/40 p-5 rounded-2xl border border-edge border-dashed text-center">
+                              <div className="text-2xl mb-2">☝️</div>
+                              <div className="text-sm font-bold text-primary mb-1">Manage Schedule</div>
+                              <p className="text-xs text-secondary leading-relaxed">
+                                Select a red window to manage existing maintenance, or drag across empty space to schedule a new one.
+                              </p>
+                            </div>
+                          ) : (
+                            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+                              <h3 className="text-sm font-bold text-primary flex items-center gap-2">
+                                <span className="text-accent">{selectedMaintEventId ? "✏️" : "➕"}</span>
+                                {selectedMaintEventId ? "Maintenance Details" : "New Maintenance Window"}
+                              </h3>
 
+                              <div className="grid grid-cols-1 gap-4">
+                                <div className="field">
+                                  <label className="label">Start</label>
+                                  <input 
+                                    type="datetime-local" 
+                                    {...register("start_time", { required: true })} 
+                                    className="input !bg-base/30 !py-2" 
+                                  />
+                                </div>
+                                <div className="field">
+                                  <label className="label">End</label>
+                                  <input 
+                                    type="datetime-local" 
+                                    {...register("end_time", { required: true })} 
+                                    className="input !bg-base/30 !py-2" 
+                                  />
+                                </div>
+                                <div className="field">
+                                  <label className="label">Reason / Work Order</label>
+                                  <input 
+                                    type="text" 
+                                    {...register("reason")} 
+                                    placeholder="e.g. 100-hour inspection" 
+                                    className="input !bg-base/30 !py-2" 
+                                  />
+                                </div>
+                              </div>
 
-                <div className="tbl-wrap">
-                  <table className="tbl">
-                    <thead>
-                      <tr>
-                        <th>Aircraft (ID)</th>
-                        <th>Start</th>
-                        <th>End</th>
-                        <th>Reason</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {sortedMaint.length === 0 ? (
-                        <tr><td colSpan={5} className="text-center py-8 text-muted">No scheduled maintenance.</td></tr>
-                      ) : (
-                        sortedMaint.map(m => {
-                          const ac = aircraft.find(a => a.id === m.aircraft_id);
-                          return (
-                            <tr key={m.id}>
-                              <td><span className="font-bold text-warn font-mono">{ac?.tail_number ?? m.aircraft_id}</span></td>
-                              <td>{formatDisplay(m.start_time, "MMM d, h:mm a")}</td>
-                              <td>{formatDisplay(m.end_time, "MMM d, h:mm a")}</td>
-                              <td>{m.reason || "—"}</td>
-                              <td>
-                                <button
-                                  onClick={() => setMaintToDelete(m.id)}
-                                  className="btn-danger btn-sm"
-                                  disabled={deleteMaint.isPending}
+                              <div className="flex flex-col gap-3 pt-4 border-t border-edge-strong">
+                                {!selectedMaintEventId ? (
+                                  <button type="submit" disabled={createMaint.isPending} className="btn-primary w-full justify-center">
+                                    {createMaint.isPending ? "Configuring..." : "Commit Maintenance →"}
+                                  </button>
+                                ) : (
+                                  <button 
+                                    type="button" 
+                                    onClick={() => setMaintToDelete(selectedMaintEventId)}
+                                    className="btn-danger w-full justify-center"
+                                  >
+                                    Remove Maintenance Window
+                                  </button>
+                                )}
+                                <button 
+                                  type="button" 
+                                  onClick={() => {
+                                    setDraftMaintSlot(null);
+                                    setSelectedMaintEventId(null);
+                                    reset({ aircraft_id: selectedAircraftMaint, start_time: "", end_time: "", reason: "" });
+                                  }} 
+                                  className="btn-ghost w-full justify-center text-xs"
                                 >
-                                  Remove
+                                  Clear Selection
                                 </button>
-                              </td>
-                            </tr>
-                          );
-                        })
+                              </div>
+                            </form>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="p-4 bg-accent/5 border border-accent/10 rounded-2xl text-xs text-secondary leading-relaxed">
+                          Select an aircraft to enable interactive scheduling and window management.
+                        </div>
                       )}
-                    </tbody>
-                  </table>
+                    </div>
+                  </div>
+
+                  {/* Right Column: Calendar */}
+                  <div className="flex-1 min-w-0 order-1 xl:order-2">
+                    <div className="bg-surface/30 backdrop-blur-md border border-edge-strong rounded-3xl p-5 shadow-xl">
+                      <div className="mb-4 flex items-center justify-between">
+                        <div>
+                          <h2 className="text-lg font-bold text-primary">
+                            {selectedAircraftMaint ? aircraft.find(a => a.id === parseInt(selectedAircraftMaint))?.tail_number : "Fleet Schedule"}
+                          </h2>
+                          <p className="text-xs text-secondary">
+                            {selectedAircraftMaint ? "Interactive maintenance & flight timeline" : "Global availability overview"}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-accent/10 border border-accent/20">
+                            <div className="w-2 h-2 rounded-full bg-accent"></div>
+                            <span className="text-[10px] font-bold text-accent uppercase tracking-tighter">Reservations</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-danger/10 border border-danger/20">
+                            <div className="w-2 h-2 rounded-full bg-danger"></div>
+                            <span className="text-[10px] font-bold text-danger uppercase tracking-tighter">Maintenance</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <AircraftCalendar
+                        events={calendarEvents}
+                        resources={selectedAircraftMaint ? undefined : calendarResources}
+                        date={currentDate}
+                        onDateChange={setCurrentDate}
+                        view={currentView}
+                        onViewChange={setCurrentView}
+                        onSelectSlot={handleSelectSlot}
+                        onSelectEvent={handleSelectEvent}
+                        isLoading={maintLoading}
+                        height={selectedAircraftMaint ? 800 : 600}
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
             )}

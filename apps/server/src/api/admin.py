@@ -52,19 +52,20 @@ async def all_reservations(
 
 
 @router.get("/maintenance", response_model=MaintenanceWindowListResponse)
-@protected(UserRole.ADMIN)
+@protected()
 async def list_maintenance(
     request: Request,
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
+    aircraft_id: int | None = Query(None),
 ) -> MaintenanceWindowListResponse:
-    """List all maintenance windows (admin only)"""
+    """List maintenance windows (optionally filtered by aircraft)"""
     try:
         user_id = int(request.state.user["sub"])
         user = await usr_svc.get_me(user_id)
 
         windows, total = await aircraft_svc.list_maintenance(
-            user.club_id, page, limit
+            user.club_id, page, limit, aircraft_id
         )
 
         return {

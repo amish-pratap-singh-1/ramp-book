@@ -60,6 +60,12 @@ const AircraftCalendar: React.FC<AircraftCalendarProps> = ({
 }) => {
   const eventPropGetter = (event: CalendarEvent) => {
     if (event.isDraft) {
+      if (event.type === "maintenance") {
+        return { 
+          className: "rbc-event-draft-maintenance",
+          style: { backgroundColor: "rgba(239, 68, 68, 0.4)", border: "2px dashed #b91c1c", color: "#000" } 
+        };
+      }
       return { 
         className: "rbc-event-draft",
         style: { backgroundColor: "rgba(56, 189, 248, 0.4)", border: "2px dashed #0ea5e9", color: "#000" } 
@@ -69,7 +75,13 @@ const AircraftCalendar: React.FC<AircraftCalendarProps> = ({
     if (event.type === "maintenance") {
       return { 
         className: "rbc-event-maintenance",
-        style: { backgroundColor: "#ef4444", borderColor: "#b91c1c", color: "#ffffff" } 
+        style: { 
+          backgroundColor: "#ef4444", 
+          backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,0.05) 10px, rgba(0,0,0,0.05) 20px)",
+          borderColor: "#991b1b", 
+          color: "#ffffff",
+          fontWeight: "bold",
+        } 
       };
     }
     

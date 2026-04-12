@@ -97,10 +97,7 @@ export default function NewReservationPage() {
       const sEnd = new Date(s.end_time);
       return slotInfo.start < sEnd && slotInfo.end > sStart;
     });
-    if (overlap) {
-      alert("Selected time overlaps with an existing booking or maintenance window.");
-      return;
-    }
+
     setDraftSlot({ start: slotInfo.start, end: slotInfo.end });
   };
 
@@ -110,9 +107,9 @@ export default function NewReservationPage() {
         <title>New Booking — RampBook</title>
       </Head>
       <Layout>
-        <QueryBoundary 
-          isLoading={acLoading} 
-          data={aircraftData} 
+        <QueryBoundary
+          isLoading={acLoading}
+          data={aircraftData}
           loadingComponent={<LoadingSpinner fullPage />}
         >
           <div className="page-header">
@@ -130,7 +127,7 @@ export default function NewReservationPage() {
                     onChange={(e) => {
                       setSelectedAircraft(e.target.value);
                       setDraftSlot(null);
-                      setCurrentDate(new Date()); 
+                      setCurrentDate(new Date());
                       setCurrentView("week");
                     }}
                     className="select-input max-w-sm"

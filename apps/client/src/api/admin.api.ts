@@ -15,8 +15,9 @@ export const adminApi = {
     const res = await api.get("/api/v1/admin/reservations", config);
     return res.data;
   },
-  listMaintenance: async (config?: AxiosRequestConfig): Promise<MaintenanceWindowListResponse> => {
-    const res = await api.get("/api/v1/admin/maintenance", config);
+  listMaintenance: async (aircraftId?: number, config?: AxiosRequestConfig): Promise<MaintenanceWindowListResponse> => {
+    const params = aircraftId ? { aircraft_id: aircraftId } : {};
+    const res = await api.get("/api/v1/admin/maintenance", { ...config, params });
     return res.data;
   },
   addMaintenance: async (data: MaintenanceWindowCreateRequest, config?: AxiosRequestConfig): Promise<MaintenanceWindowResponseWrapper> => {
