@@ -1,0 +1,19 @@
+✅ 200 OK
+Most common
+
+✅ 201 Created
+Resource successfully created
+Often used with POST
+
+✅ 202 Accepted
+Request accepted but not processed yet
+Used for async/background jobs
+
+✅ 204 No Content
+Success but no response body
+Common for DELETE or updates
+
+✅ 206 Partial Content
+Only part of the resource is returned
+Used in file downloads / streaming
+

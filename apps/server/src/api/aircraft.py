@@ -35,7 +35,7 @@ async def list_aircraft(
         )
 
         return {
-            "aircrafts": [
+            "aircraft": [
                 AircraftResponse.model_validate(a) for a in aircraft
             ],
             "pagination": {"page": page, "limit": limit, "total": total},

@@ -57,7 +57,7 @@ res
 GET /api/v1/aircraft/?page=1&limit=20
 res
 {
-  "aircrafts": [...],
+  "aircraft": [...],
   "pagination": {
     "page": 1,
     "limit": 20,

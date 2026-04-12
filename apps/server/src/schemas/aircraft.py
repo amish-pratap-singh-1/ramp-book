@@ -67,7 +67,7 @@ class AircraftResponseWrapper(BaseModel):
 class AircraftListResponse(BaseModel):
     """Aircraft list response"""
 
-    aircrafts: list[AircraftResponse]
+    aircraft: list[AircraftResponse]
     pagination: Pagination
 
 
