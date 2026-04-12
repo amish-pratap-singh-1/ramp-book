@@ -9,7 +9,6 @@ from sqlalchemy.exc import SQLAlchemyError
 from src.entities.maintenance_window import MaintenanceWindow
 from src.schemas.maintenance import MaintenanceWindowCreate
 from src.svc.dbsvc import DbSvc
-from src.svc.errsvc import DatabaseError
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +43,7 @@ class MaintenanceRepository:
                 result = await session.execute(stmt)
                 return list(result.scalars().all()), total or 0
         except SQLAlchemyError as e:
-            raise DatabaseError(detail=str(e)) from e
+            self.db_svc.handle_db_error(e)
 
     async def get_by_aircraft(
         self, aircraft_id: int, page: int = 1, limit: int = 20
@@ -70,7 +69,7 @@ class MaintenanceRepository:
                 result = await session.execute(stmt)
                 return list(result.scalars().all()), total or 0
         except SQLAlchemyError as e:
-            raise DatabaseError(detail=str(e)) from e
+            self.db_svc.handle_db_error(e)
 
     async def get_by_id(self, window_id: int) -> Optional[MaintenanceWindow]:
         """Get a maintenance window by id"""
@@ -83,7 +82,7 @@ class MaintenanceRepository:
                 )
                 return result.scalar_one_or_none()
         except SQLAlchemyError as e:
-            raise DatabaseError(detail=str(e)) from e
+            self.db_svc.handle_db_error(e)
 
     async def create(
         self, club_id: int, data: MaintenanceWindowCreate
@@ -98,7 +97,7 @@ class MaintenanceRepository:
                 logger.info("Maintenance window created: %s", window.id)
                 return window
         except SQLAlchemyError as e:
-            raise DatabaseError(detail=str(e)) from e
+            self.db_svc.handle_db_error(e)
 
     async def delete(self, window_id: int) -> bool:
         """Delete a maintenance window, returns True if found and deleted"""
@@ -117,4 +116,4 @@ class MaintenanceRepository:
                 logger.info("Maintenance window deleted: %s", window_id)
                 return True
         except SQLAlchemyError as e:
-            raise DatabaseError(detail=str(e)) from e
+            self.db_svc.handle_db_error(e)

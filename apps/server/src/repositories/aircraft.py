@@ -13,7 +13,6 @@ from src.entities.reservation import Reservation, ReservationStatus
 from src.schemas.aircraft import (AircraftCreate, AircraftScheduleItem,
                                   AircraftUpdate)
 from src.svc.dbsvc import DbSvc
-from src.svc.errsvc import DatabaseError
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +46,7 @@ class AircraftRepository:
                 result = await session.execute(stmt)
                 return list(result.scalars().all()), total or 0
         except SQLAlchemyError as e:
-            raise DatabaseError(detail=str(e)) from e
+            self.db_svc.handle_db_error(e)
 
     async def get_by_id(self, aircraft_id: int) -> Optional[Aircraft]:
         """Get aircraft by id"""
@@ -58,7 +57,7 @@ class AircraftRepository:
                 )
                 return result.scalar_one_or_none()
         except SQLAlchemyError as e:
-            raise DatabaseError(detail=str(e)) from e
+            self.db_svc.handle_db_error(e)
 
     async def create(self, club_id: int, data: AircraftCreate) -> Aircraft:
         """Create a new aircraft"""
@@ -71,7 +70,7 @@ class AircraftRepository:
                 logger.info("Aircraft created: %s", aircraft.id)
                 return aircraft
         except SQLAlchemyError as e:
-            raise DatabaseError(detail=str(e)) from e
+            self.db_svc.handle_db_error(e)
 
     async def update(
         self, aircraft_id: int, data: AircraftUpdate
@@ -92,7 +91,7 @@ class AircraftRepository:
                 logger.info("Aircraft updated: %s", aircraft_id)
                 return aircraft
         except SQLAlchemyError as e:
-            raise DatabaseError(detail=str(e)) from e
+            self.db_svc.handle_db_error(e)
 
     async def is_available(
         self,
@@ -137,7 +136,7 @@ class AircraftRepository:
 
                 return True
         except SQLAlchemyError as e:
-            raise DatabaseError(detail=str(e)) from e
+            self.db_svc.handle_db_error(e)
 
     async def get_schedule(
         self, aircraft_id: int
@@ -188,4 +187,4 @@ class AircraftRepository:
 
             return schedule
         except SQLAlchemyError as e:
-            raise DatabaseError(detail=str(e)) from e
+            self.db_svc.handle_db_error(e)

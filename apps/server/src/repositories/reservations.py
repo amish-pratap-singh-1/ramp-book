@@ -12,7 +12,6 @@ from src.entities.aircraft import Aircraft
 from src.entities.reservation import Reservation, ReservationStatus
 from src.schemas.reservation import ReservationCreate, ReservationUpdate
 from src.svc.dbsvc import DbSvc
-from src.svc.errsvc import DatabaseError
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +54,7 @@ class ReservationRepository:
                 result = await session.execute(stmt)
                 return list(result.scalars().all()), total or 0
         except SQLAlchemyError as e:
-            raise DatabaseError(detail=str(e)) from e
+            self.db_svc.handle_db_error(e)
 
     async def get_for_member(
         self, member_id: int, page: int = 1, limit: int = 20
@@ -81,7 +80,7 @@ class ReservationRepository:
                 result = await session.execute(stmt)
                 return list(result.scalars().all()), total or 0
         except SQLAlchemyError as e:
-            raise DatabaseError(detail=str(e)) from e
+            self.db_svc.handle_db_error(e)
 
     async def get_for_instructor(
         self, instructor_id: int, page: int = 1, limit: int = 20
@@ -108,7 +107,7 @@ class ReservationRepository:
                 result = await session.execute(stmt)
                 return list(result.scalars().all()), total or 0
         except SQLAlchemyError as e:
-            raise DatabaseError(detail=str(e)) from e
+            self.db_svc.handle_db_error(e)
 
     async def get_by_id(self, reservation_id: int) -> Optional[Reservation]:
         """Get a reservation by id with relations loaded"""
@@ -121,7 +120,7 @@ class ReservationRepository:
                 )
                 return result.scalar_one_or_none()
         except SQLAlchemyError as e:
-            raise DatabaseError(detail=str(e)) from e
+            self.db_svc.handle_db_error(e)
 
     async def create(
         self, club_id: int, member_id: int, data: ReservationCreate
@@ -146,7 +145,7 @@ class ReservationRepository:
                 # Reload with relations
                 return await self.get_by_id(reservation.id)
         except SQLAlchemyError as e:
-            raise DatabaseError(detail=str(e)) from e
+            self.db_svc.handle_db_error(e)
 
     async def update(
         self,
@@ -168,7 +167,7 @@ class ReservationRepository:
                 logger.info("Reservation updated: %s", reservation_id)
             return await self.get_by_id(reservation_id)
         except SQLAlchemyError as e:
-            raise DatabaseError(detail=str(e)) from e
+            self.db_svc.handle_db_error(e)
 
     async def cancel(self, reservation_id: int) -> Optional[Reservation]:
         """Set reservation status to cancelled"""
@@ -185,7 +184,7 @@ class ReservationRepository:
                 logger.info("Reservation cancelled: %s", reservation_id)
             return await self.get_by_id(reservation_id)
         except SQLAlchemyError as e:
-            raise DatabaseError(detail=str(e)) from e
+            self.db_svc.handle_db_error(e)
 
     async def complete(
         self,
@@ -219,7 +218,7 @@ class ReservationRepository:
                 logger.info("Reservation completed: %s", reservation_id)
             return await self.get_by_id(reservation_id)
         except SQLAlchemyError as e:
-            raise DatabaseError(detail=str(e)) from e
+            self.db_svc.handle_db_error(e)
 
     # ── Conflict helpers ────────────────────────────────────────────────────
 
@@ -247,7 +246,7 @@ class ReservationRepository:
                 result = await session.execute(q)
                 return result.scalar_one_or_none() is not None
         except SQLAlchemyError as e:
-            raise DatabaseError(detail=str(e)) from e
+            self.db_svc.handle_db_error(e)
 
     async def instructor_is_busy(
         self,
@@ -273,4 +272,4 @@ class ReservationRepository:
                 result = await session.execute(q)
                 return result.scalar_one_or_none() is not None
         except SQLAlchemyError as e:
-            raise DatabaseError(detail=str(e)) from e
+            self.db_svc.handle_db_error(e)

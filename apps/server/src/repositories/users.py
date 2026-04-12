@@ -10,7 +10,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.entities.user import User, UserRole
 from src.schemas.user import UserCreate
 from src.svc.dbsvc import DbSvc
-from src.svc.errsvc import DatabaseError
 from src.svc.secsvc import SecSvc
 
 logger = logging.getLogger(__name__)
@@ -38,7 +37,7 @@ class UserRepository:
                 )
                 return result.scalar_one_or_none()
         except SQLAlchemyError as e:
-            raise DatabaseError(detail=str(e)) from e
+            self.db_svc.handle_db_error(e)
 
     async def get_by_id(self, user_id: int) -> Optional[User]:
         """get user by id"""
@@ -49,7 +48,7 @@ class UserRepository:
                 )
                 return result.scalar_one_or_none()
         except SQLAlchemyError as e:
-            raise DatabaseError(detail=str(e)) from e
+            self.db_svc.handle_db_error(e)
 
     async def get_instructors(
         self, club_id: int, page: int = 1, limit: int = 20
@@ -85,7 +84,7 @@ class UserRepository:
                 result = await session.execute(stmt)
                 return list(result.scalars().all()), total or 0
         except SQLAlchemyError as e:
-            raise DatabaseError(detail=str(e)) from e
+            self.db_svc.handle_db_error(e)
 
     async def get_all(
         self, club_id: int, page: int = 1, limit: int = 20
@@ -113,7 +112,7 @@ class UserRepository:
                 result = await session.execute(stmt)
                 return list(result.scalars().all()), total or 0
         except SQLAlchemyError as e:
-            raise DatabaseError(detail=str(e)) from e
+            self.db_svc.handle_db_error(e)
 
     async def create(self, club_id: int, data: UserCreate) -> User:
         """create a new user"""
@@ -135,4 +134,4 @@ class UserRepository:
                 logger.info("User created: %s", user.id)
                 return user
         except SQLAlchemyError as e:
-            raise DatabaseError(detail=str(e)) from e
+            self.db_svc.handle_db_error(e)
