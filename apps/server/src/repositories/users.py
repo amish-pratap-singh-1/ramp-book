@@ -68,6 +68,7 @@ class UserRepository:
                     User.role == UserRole.INSTRUCTOR,
                     User.is_active.is_(True),
                 )
+                .order_by(User.created_at.desc())
                 .offset((page - 1) * limit)
                 .limit(limit)
             )
@@ -92,6 +93,7 @@ class UserRepository:
             stmt = (
                 select(User)
                 .where(User.club_id == club_id)
+                .order_by(User.created_at.desc())
                 .offset((page - 1) * limit)
                 .limit(limit)
             )

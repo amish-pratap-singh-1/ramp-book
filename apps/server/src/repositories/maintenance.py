@@ -33,6 +33,7 @@ class MaintenanceRepository:
             stmt = (
                 select(MaintenanceWindow)
                 .where(MaintenanceWindow.club_id == club_id)
+                .order_by(MaintenanceWindow.created_at.desc())
                 .offset((page - 1) * limit)
                 .limit(limit)
             )
@@ -55,6 +56,7 @@ class MaintenanceRepository:
             stmt = (
                 select(MaintenanceWindow)
                 .where(MaintenanceWindow.aircraft_id == aircraft_id)
+                .order_by(MaintenanceWindow.created_at.desc())
                 .offset((page - 1) * limit)
                 .limit(limit)
             )

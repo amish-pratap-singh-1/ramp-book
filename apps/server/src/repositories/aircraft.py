@@ -37,6 +37,7 @@ class AircraftRepository:
             stmt = (
                 select(Aircraft)
                 .where(Aircraft.club_id == club_id)
+                .order_by(Aircraft.created_at.desc())
                 .offset((page - 1) * limit)
                 .limit(limit)
             )
