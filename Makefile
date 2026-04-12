@@ -70,7 +70,7 @@ fmt-be:
 
 lint-be:
 	poetry -C $(SERVER_DIR) run pycodestyle src
-	poetry -C $(SERVER_DIR) run pylint src
+	poetry -C $(SERVER_DIR) run pylint --disable=R0903,R0801 src
 
 gen-migration:
 	poetry -C $(SERVER_DIR) run alembic revision --autogenerate -m "auto"

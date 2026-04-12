@@ -4,7 +4,7 @@ import datetime
 import logging
 from typing import Optional
 
-from sqlalchemy import and_, func, or_, select
+from sqlalchemy import and_, func, select
 from sqlalchemy.orm import selectinload
 
 from src.entities.aircraft import Aircraft

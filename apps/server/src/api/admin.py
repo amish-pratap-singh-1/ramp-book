@@ -6,7 +6,6 @@ from src.core.aircraftsvc import AircraftSvc
 from src.core.reservationsvc import ReservationSvc
 from src.core.usrsvc import UsrSvc
 from src.decorators.auth import protected
-from src.svc.errsvc import ErrSvc
 from src.entities.user import UserRole
 from src.schemas.maintenance import (MaintenanceWindowCreateRequest,
                                      MaintenanceWindowListResponse,
@@ -16,6 +15,7 @@ from src.schemas.reservation import (ReservationListResponse,
                                      ReservationResponse)
 from src.schemas.user import (UserCreateRequest, UserListResponse,
                               UserResponse, UserResponseWrapper)
+from src.svc.errsvc import ErrSvc
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
@@ -31,8 +31,8 @@ async def all_reservations(
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
 ) -> ReservationListResponse:
+    """Get all reservations across the club (admin only)"""
     try:
-        """Get all reservations across the club (admin only)"""
         user_id = int(request.state.user["sub"])
         role = request.state.user["role"]
         user = await usr_svc.get_me(user_id)
@@ -58,8 +58,8 @@ async def list_maintenance(
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
 ) -> MaintenanceWindowListResponse:
+    """List all maintenance windows (admin only)"""
     try:
-        """List all maintenance windows (admin only)"""
         user_id = int(request.state.user["sub"])
         user = await usr_svc.get_me(user_id)
 
@@ -86,8 +86,8 @@ async def list_maintenance(
 async def create_maintenance(
     req: MaintenanceWindowCreateRequest, request: Request
 ) -> MaintenanceWindowResponseWrapper:
+    """Create a maintenance window (admin only)"""
     try:
-        """Create a maintenance window (admin only)"""
         user_id = int(request.state.user["sub"])
         user = await usr_svc.get_me(user_id)
 
@@ -95,7 +95,9 @@ async def create_maintenance(
             user.club_id, req.maintenance_window
         )
         return {
-            "maintenance_window": MaintenanceWindowResponse.model_validate(window)
+            "maintenance_window": MaintenanceWindowResponse.model_validate(
+                window
+            )
         }
     except Exception as e:
         raise ErrSvc.handle_api_error(e)
@@ -104,8 +106,8 @@ async def create_maintenance(
 @router.delete("/maintenance/{window_id}", status_code=204)
 @protected(UserRole.ADMIN)
 async def delete_maintenance(window_id: int) -> None:
+    """Delete a maintenance window (admin only)"""
     try:
-        """Delete a maintenance window (admin only)"""
         await aircraft_svc.delete_maintenance(window_id)
     except Exception as e:
         raise ErrSvc.handle_api_error(e)
@@ -118,8 +120,8 @@ async def list_users(
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
 ) -> UserListResponse:
+    """List all users (admin only)"""
     try:
-        """List all users (admin only)"""
         user_id = int(request.state.user["sub"])
 
         users, total = await usr_svc.list_users(user_id, page, limit)
@@ -137,8 +139,8 @@ async def list_users(
 async def create_user(
     req: UserCreateRequest, request: Request
 ) -> UserResponseWrapper:
+    """Create a new user (admin only)"""
     try:
-        """Create a new user (admin only)"""
         user_id = int(request.state.user["sub"])
 
         new_user = await usr_svc.create_user(user_id, req.user)

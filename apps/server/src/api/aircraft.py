@@ -5,12 +5,12 @@ from fastapi import APIRouter, Query, Request
 from src.core.aircraftsvc import AircraftSvc
 from src.core.usrsvc import UsrSvc
 from src.decorators.auth import protected
-from src.svc.errsvc import ErrSvc
 from src.entities.user import UserRole
 from src.schemas.aircraft import (AircraftCreateRequest, AircraftListResponse,
                                   AircraftResponse, AircraftResponseWrapper,
                                   AircraftScheduleListResponse,
                                   AircraftUpdateRequest)
+from src.svc.errsvc import ErrSvc
 
 router = APIRouter(prefix="/aircraft", tags=["Aircraft"])
 
@@ -25,8 +25,8 @@ async def list_aircraft(
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
 ) -> AircraftListResponse:
+    """List all aircraft in the club fleet"""
     try:
-        """List all aircraft in the club fleet"""
         user_id = int(request.state.user["sub"])
         user = await usr_svc.get_me(user_id)
 
@@ -35,7 +35,9 @@ async def list_aircraft(
         )
 
         return {
-            "aircrafts": [AircraftResponse.model_validate(a) for a in aircraft],
+            "aircrafts": [
+                AircraftResponse.model_validate(a) for a in aircraft
+            ],
             "pagination": {"page": page, "limit": limit, "total": total},
         }
     except Exception as e:
@@ -45,8 +47,8 @@ async def list_aircraft(
 @router.get("/{aircraft_id}", response_model=AircraftResponseWrapper)
 @protected()
 async def get_aircraft(aircraft_id: int) -> AircraftResponseWrapper:
+    """Get a single aircraft by ID"""
     try:
-        """Get a single aircraft by ID"""
         aircraft = await aircraft_svc.get_aircraft(aircraft_id)
         return {"aircraft": AircraftResponse.model_validate(aircraft)}
     except Exception as e:
@@ -60,9 +62,9 @@ async def get_aircraft(aircraft_id: int) -> AircraftResponseWrapper:
 async def get_aircraft_schedule(
     aircraft_id: int,
 ) -> AircraftScheduleListResponse:
+    """Get non-identifying overlap schedule for an aircraft to
+    power UI blocking"""
     try:
-        """Get non-identifying overlap schedule for an aircraft to
-        power UI blocking"""
         schedules = await aircraft_svc.get_schedule(aircraft_id)
 
         # Simple pagination for schedule (all items for now but wrapped)
@@ -83,12 +85,14 @@ async def get_aircraft_schedule(
 async def create_aircraft(
     req: AircraftCreateRequest, request: Request
 ) -> AircraftResponseWrapper:
+    """Create a new aircraft (admin only)"""
     try:
-        """Create a new aircraft (admin only)"""
         user_id = int(request.state.user["sub"])
         user = await usr_svc.get_me(user_id)
 
-        aircraft = await aircraft_svc.create_aircraft(user.club_id, req.aircraft)
+        aircraft = await aircraft_svc.create_aircraft(
+            user.club_id, req.aircraft
+        )
         return {"aircraft": AircraftResponse.model_validate(aircraft)}
     except Exception as e:
         raise ErrSvc.handle_api_error(e)
@@ -99,9 +103,11 @@ async def create_aircraft(
 async def update_aircraft(
     aircraft_id: int, req: AircraftUpdateRequest
 ) -> AircraftResponseWrapper:
+    """Update aircraft details (admin only)"""
     try:
-        """Update aircraft details (admin only)"""
-        aircraft = await aircraft_svc.update_aircraft(aircraft_id, req.aircraft)
+        aircraft = await aircraft_svc.update_aircraft(
+            aircraft_id, req.aircraft
+        )
         return {"aircraft": AircraftResponse.model_validate(aircraft)}
     except Exception as e:
         raise ErrSvc.handle_api_error(e)

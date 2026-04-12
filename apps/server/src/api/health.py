@@ -10,8 +10,8 @@ router = APIRouter(tags=["Health"])
 
 @router.get("/health", response_model=HealthResponse)
 async def health_check():
+    """Health check endpoint"""
     try:
-        """Health check endpoint"""
         return {"health": {"status": "ok", "message": "server is healthy"}}
     except Exception as e:
         raise ErrSvc.handle_api_error(e)

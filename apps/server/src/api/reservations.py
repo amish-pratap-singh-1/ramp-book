@@ -5,13 +5,13 @@ from fastapi import APIRouter, Query, Request
 from src.core.reservationsvc import ReservationSvc
 from src.core.usrsvc import UsrSvc
 from src.decorators.auth import protected
-from src.svc.errsvc import ErrSvc
 from src.schemas.reservation import (FlightCompleteRequestWrapper,
                                      ReservationCreateRequest,
                                      ReservationListResponse,
                                      ReservationResponse,
                                      ReservationResponseWrapper,
                                      ReservationUpdateRequest)
+from src.svc.errsvc import ErrSvc
 
 router = APIRouter(prefix="/reservations", tags=["Reservations"])
 
@@ -26,11 +26,11 @@ async def list_reservations(
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
 ) -> ReservationListResponse:
+    """
+    Admin → all reservations in the club.
+    Member/Instructor → their own reservations.
+    """
     try:
-        """
-        Admin → all reservations in the club.
-        Member/Instructor → their own reservations.
-        """
         user_id = int(request.state.user["sub"])
         role = request.state.user["role"]
 
@@ -55,12 +55,14 @@ async def list_reservations(
 async def get_reservation(
     reservation_id: int, request: Request
 ) -> ReservationResponseWrapper:
+    """Get a single reservation. Members can only see their own."""
     try:
-        """Get a single reservation. Members can only see their own."""
         user_id = int(request.state.user["sub"])
         role = request.state.user["role"]
 
-        reservation = await res_svc.get_reservation(reservation_id, user_id, role)
+        reservation = await res_svc.get_reservation(
+            reservation_id, user_id, role
+        )
 
         return {"reservation": ReservationResponse.model_validate(reservation)}
     except Exception as e:
@@ -72,14 +74,16 @@ async def get_reservation(
 async def create_reservation(
     req: ReservationCreateRequest, request: Request
 ) -> ReservationResponseWrapper:
+    """Create a reservation. Enforces all double-booking rules."""
     try:
-        """Create a reservation. Enforces all double-booking rules."""
         user_id = int(request.state.user["sub"])
         data = req.reservation
 
         user = await usr_svc.get_me(user_id)
 
-        reservation = await res_svc.create_reservation(user_id, user.club_id, data)
+        reservation = await res_svc.create_reservation(
+            user_id, user.club_id, data
+        )
         return {"reservation": ReservationResponse.model_validate(reservation)}
     except Exception as e:
         raise ErrSvc.handle_api_error(e)
@@ -90,9 +94,9 @@ async def create_reservation(
 async def update_reservation(
     reservation_id: int, req: ReservationUpdateRequest, request: Request
 ) -> ReservationResponseWrapper:
+    """Edit time window or instructor. Members can only edit their own
+    confirmed reservations."""
     try:
-        """Edit time window or instructor. Members can only edit their own
-        confirmed reservations."""
         user_id = int(request.state.user["sub"])
         role = request.state.user["role"]
         data = req.reservation
@@ -110,12 +114,14 @@ async def update_reservation(
 async def cancel_reservation(
     reservation_id: int, request: Request
 ) -> ReservationResponseWrapper:
+    """Cancel a reservation."""
     try:
-        """Cancel a reservation."""
         user_id = int(request.state.user["sub"])
         role = request.state.user["role"]
 
-        cancelled = await res_svc.cancel_reservation(reservation_id, user_id, role)
+        cancelled = await res_svc.cancel_reservation(
+            reservation_id, user_id, role
+        )
         return {"reservation": ReservationResponse.model_validate(cancelled)}
     except Exception as e:
         raise ErrSvc.handle_api_error(e)
@@ -128,8 +134,8 @@ async def cancel_reservation(
 async def complete_reservation(
     reservation_id: int, req: FlightCompleteRequestWrapper, request: Request
 ) -> ReservationResponseWrapper:
+    """Log flight completion with hobbs hours."""
     try:
-        """Log flight completion with hobbs hours."""
         user_id = int(request.state.user["sub"])
         role = request.state.user["role"]
         data = req.flight_data
