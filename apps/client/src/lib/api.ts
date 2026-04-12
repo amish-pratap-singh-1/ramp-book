@@ -70,10 +70,12 @@ api.interceptors.response.use(
 
       if (!message) {
         const status = error.response?.status;
-        const serverMessage = error.response?.data?.message;
+        const data = error.response?.data;
 
-        if (serverMessage) {
-          message = serverMessage;
+        if (data?.message) {
+          message = data.message;
+        } else if (typeof data?.detail === "string") {
+          message = data.detail;
         } else {
           switch (status) {
             case 400:
@@ -86,17 +88,14 @@ api.interceptors.response.use(
               message = "The requested resource was not found.";
               break;
             case 422:
-              // Handle FastAPI validation errors
-              const detail = error.response?.data?.detail;
-              if (Array.isArray(detail)) {
-                message = detail
+              // Handle FastAPI validation errors (arrays)
+              if (Array.isArray(data?.detail)) {
+                message = data.detail
                   .map((err: any) => {
                     const path = err.loc ? err.loc.join(".") : "";
                     return `${path}: ${err.msg}`;
                   })
                   .join(", ");
-              } else if (typeof detail === "string") {
-                message = detail;
               } else {
                 message = "Validation error. Please check your data.";
               }

@@ -52,9 +52,7 @@ export default function EditReservationPage() {
 
   // Removed manual isLoading check, handled by QueryBoundary below
 
-  const apiError = (update.error as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
-
-  const onSubmit = async (values: { instructor_id: string; start_time: string; end_time: string; notes: string }) => {
+  const onSubmit = (values: { instructor_id: string; start_time: string; end_time: string; notes: string }) => {
     const payload: components["schemas"]["ReservationUpdateRequest"] = {
       reservation: {
         instructor_id: values.instructor_id ? parseInt(values.instructor_id) : undefined,
@@ -64,9 +62,11 @@ export default function EditReservationPage() {
       }
     };
     if (!reservation) return;
-    await update.mutateAsync({ id: reservation.id, data: payload });
-
-    router.push("/reservations");
+    update.mutate({ id: reservation.id, data: payload }, {
+      onSuccess: () => {
+        router.push("/reservations");
+      }
+    });
   };
 
   return (
@@ -131,11 +131,6 @@ export default function EditReservationPage() {
                   <textarea id="edit-notes" {...register("notes")} rows={3} className="input resize-none" />
                 </div>
 
-                {update.isError && (
-                  <div className="bg-danger/10 border border-danger/20 rounded-xl px-4 py-3 text-sm text-danger">
-                    {apiError ?? "Update failed — check for conflicts"}
-                  </div>
-                )}
 
                 <div className="flex gap-3 pt-2">
                   <button type="submit" disabled={update.isPending} className="btn-primary" id="save-edit">

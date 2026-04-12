@@ -62,7 +62,7 @@ export default function NewReservationPage() {
 
   // Removed manual acLoading check, handled by QueryBoundary below
 
-  const onSubmit = async (values: { instructor_id: string; notes: string }) => {
+  const onSubmit = (values: { instructor_id: string; notes: string }) => {
     if (!draftSlot || !selectedAircraft) return;
     const payload: components["schemas"]["ReservationCreateRequest"] = {
       reservation: {
@@ -73,12 +73,14 @@ export default function NewReservationPage() {
         notes: values.notes || undefined,
       }
     };
-    await create.mutateAsync(payload);
-    router.push("/reservations");
+    create.mutate(payload, {
+      onSuccess: () => {
+        router.push("/reservations");
+      }
+    });
   };
 
   const available = aircraft.filter((a) => a.status === "available");
-  const apiError = (create.error as any)?.response?.data?.detail;
 
   const events = schedule.map((s) => ({
     id: `${s.type}-${s.id}`,
@@ -251,11 +253,6 @@ export default function NewReservationPage() {
                         />
                       </div>
 
-                      {create.isError && (
-                        <div className="bg-danger/10 border border-danger/20 rounded-xl px-4 py-3 text-sm text-danger">
-                          {apiError ?? "Booking failed — double booking detected."}
-                        </div>
-                      )}
 
                       <div className="mt-2 pt-4 border-t border-edge flex flex-col gap-3">
                         <button type="submit" disabled={create.isPending} className="btn-primary w-full justify-center">

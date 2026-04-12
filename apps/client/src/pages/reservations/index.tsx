@@ -51,12 +51,12 @@ export default function ReservationsPage() {
 
   const shown = tab === "upcoming" ? upcoming : past;
 
-  const handleCancel = async (id: number) => {
+  const handleCancel = (id: number) => {
     if (!confirm("Cancel this reservation?")) return;
-    await cancel.mutateAsync(id);
+    cancel.mutate(id);
   };
 
-  const handleComplete = async () => {
+  const handleComplete = () => {
     if (!logFlight) return;
     setError("");
     const s = parseFloat(hobbs.hobbs_start);
@@ -65,14 +65,17 @@ export default function ReservationsPage() {
       setError("Hobbs end must be greater than hobbs start");
       return;
     }
-    await complete.mutateAsync({ 
+    complete.mutate({ 
       id: logFlight.id, 
       data: { 
         flight_data: { hobbs_start: s, hobbs_end: e } 
       } 
+    }, {
+      onSuccess: () => {
+        setLogFlight(null);
+        setHobbs({ hobbs_start: "", hobbs_end: "" });
+      }
     });
-    setLogFlight(null);
-    setHobbs({ hobbs_start: "", hobbs_end: "" });
   };
 
   return (
