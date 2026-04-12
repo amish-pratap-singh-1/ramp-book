@@ -13,7 +13,7 @@ export interface paths {
         };
         /**
          * Health Check
-         * @description Api to check app health
+         * @description Health check endpoint
          */
         get: operations["health_check_api_v1_health_get"];
         put?: never;
@@ -44,20 +44,722 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/aircraft/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Aircraft
+         * @description List all aircraft in the club fleet
+         */
+        get: operations["list_aircraft_api_v1_aircraft__get"];
+        put?: never;
+        /**
+         * Create Aircraft
+         * @description Create a new aircraft (admin only)
+         */
+        post: operations["create_aircraft_api_v1_aircraft__post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/aircraft/{aircraft_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Aircraft
+         * @description Get a single aircraft by ID
+         */
+        get: operations["get_aircraft_api_v1_aircraft__aircraft_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Update Aircraft
+         * @description Update aircraft details (admin only)
+         */
+        patch: operations["update_aircraft_api_v1_aircraft__aircraft_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/aircraft/{aircraft_id}/schedule": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Aircraft Schedule
+         * @description Get non-identifying overlap schedule for an aircraft to
+         *     power UI blocking
+         */
+        get: operations["get_aircraft_schedule_api_v1_aircraft__aircraft_id__schedule_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reservations/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Reservations
+         * @description Admin → all reservations in the club.
+         *     Member/Instructor → their own reservations.
+         */
+        get: operations["list_reservations_api_v1_reservations__get"];
+        put?: never;
+        /**
+         * Create Reservation
+         * @description Create a reservation. Enforces all double-booking rules.
+         */
+        post: operations["create_reservation_api_v1_reservations__post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reservations/{reservation_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Reservation
+         * @description Get a single reservation. Members can only see their own.
+         */
+        get: operations["get_reservation_api_v1_reservations__reservation_id__get"];
+        put?: never;
+        post?: never;
+        /**
+         * Cancel Reservation
+         * @description Cancel a reservation.
+         */
+        delete: operations["cancel_reservation_api_v1_reservations__reservation_id__delete"];
+        options?: never;
+        head?: never;
+        /**
+         * Update Reservation
+         * @description Edit time window or instructor. Members can only edit their own
+         *     confirmed reservations.
+         */
+        patch: operations["update_reservation_api_v1_reservations__reservation_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/reservations/{reservation_id}/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Complete Reservation
+         * @description Log flight completion with hobbs hours.
+         */
+        post: operations["complete_reservation_api_v1_reservations__reservation_id__complete_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/users/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Me
+         * @description Get current authenticated user info
+         */
+        get: operations["me_api_v1_users_me_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/users/instructors": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Instructors
+         * @description List all active instructors in the club
+         */
+        get: operations["list_instructors_api_v1_users_instructors_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reservations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * All Reservations
+         * @description Get all reservations across the club (admin only)
+         */
+        get: operations["all_reservations_api_v1_admin_reservations_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/maintenance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Maintenance
+         * @description List all maintenance windows (admin only)
+         */
+        get: operations["list_maintenance_api_v1_admin_maintenance_get"];
+        put?: never;
+        /**
+         * Create Maintenance
+         * @description Create a maintenance window (admin only)
+         */
+        post: operations["create_maintenance_api_v1_admin_maintenance_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/maintenance/{window_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete Maintenance
+         * @description Delete a maintenance window (admin only)
+         */
+        delete: operations["delete_maintenance_api_v1_admin_maintenance__window_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Users
+         * @description List all users (admin only)
+         */
+        get: operations["list_users_api_v1_admin_users_get"];
+        put?: never;
+        /**
+         * Create User
+         * @description Create a new user (admin only)
+         */
+        post: operations["create_user_api_v1_admin_users_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /**
+         * AircraftCreate
+         * @description Schema for creating an aircraft
+         */
+        AircraftCreate: {
+            /** Tail Number */
+            tail_number: string;
+            /** Model */
+            model: string;
+            /** Year */
+            year: number;
+            /** Hourly Rate Usd */
+            hourly_rate_usd: number;
+            /**
+             * Total Hobbs Hours
+             * @default 0
+             */
+            total_hobbs_hours: number;
+            /**
+             * Last 100Hr Inspection Hobbs
+             * @default 0
+             */
+            last_100hr_inspection_hobbs: number;
+            /** Notes */
+            notes?: string | null;
+        };
+        /**
+         * AircraftCreateRequest
+         * @description Aircraft creation request wrapper
+         */
+        AircraftCreateRequest: {
+            aircraft: components["schemas"]["AircraftCreate"];
+        };
+        /**
+         * AircraftListResponse
+         * @description Aircraft list response
+         */
+        AircraftListResponse: {
+            /** Aircraft */
+            aircraft: components["schemas"]["AircraftResponse"][];
+            pagination: components["schemas"]["Pagination"];
+        };
+        /**
+         * AircraftResponse
+         * @description Schema for aircraft response
+         */
+        AircraftResponse: {
+            /** Id */
+            id: number;
+            /** Club Id */
+            club_id: number;
+            /** Tail Number */
+            tail_number: string;
+            /** Model */
+            model: string;
+            /** Year */
+            year: number;
+            /** Hourly Rate Usd */
+            hourly_rate_usd: number;
+            /** Total Hobbs Hours */
+            total_hobbs_hours: number;
+            /** Last 100Hr Inspection Hobbs */
+            last_100hr_inspection_hobbs: number;
+            status: components["schemas"]["AircraftStatus"];
+            /** Notes */
+            notes?: string | null;
+        };
+        /**
+         * AircraftResponseWrapper
+         * @description Aircraft response wrapper
+         */
+        AircraftResponseWrapper: {
+            aircraft: components["schemas"]["AircraftResponse"];
+        };
+        /**
+         * AircraftScheduleItem
+         * @description Schema for a scheduled block (reservation or maintenance)
+         */
+        AircraftScheduleItem: {
+            /** Id */
+            id: number;
+            /** Start Time */
+            start_time: string;
+            /** End Time */
+            end_time: string;
+            /** Type */
+            type: string;
+        };
+        /**
+         * AircraftScheduleListResponse
+         * @description Aircraft schedule list response
+         */
+        AircraftScheduleListResponse: {
+            /** Schedules */
+            schedules: components["schemas"]["AircraftScheduleItem"][];
+            pagination: components["schemas"]["Pagination"];
+        };
+        /**
+         * AircraftStatus
+         * @description Status enum
+         * @enum {string}
+         */
+        AircraftStatus: "available" | "maintenance" | "retired";
+        /**
+         * AircraftUpdate
+         * @description Schema for updating an aircraft
+         */
+        AircraftUpdate: {
+            /** Model */
+            model?: string | null;
+            /** Year */
+            year?: number | null;
+            /** Hourly Rate Usd */
+            hourly_rate_usd?: number | null;
+            /** Total Hobbs Hours */
+            total_hobbs_hours?: number | null;
+            /** Last 100Hr Inspection Hobbs */
+            last_100hr_inspection_hobbs?: number | null;
+            status?: components["schemas"]["AircraftStatus"] | null;
+            /** Notes */
+            notes?: string | null;
+        };
+        /**
+         * AircraftUpdateRequest
+         * @description Aircraft update request wrapper
+         */
+        AircraftUpdateRequest: {
+            aircraft: components["schemas"]["AircraftUpdate"];
+        };
+        /**
+         * CertificateType
+         * @description certificate type
+         * @enum {string}
+         */
+        CertificateType: "Student" | "Private" | "Commercial" | "ATP";
+        /**
+         * FlightCompleteRequest
+         * @description Schema for completing a flight (entering hobbs hours)
+         */
+        FlightCompleteRequest: {
+            /** Hobbs Start */
+            hobbs_start: number;
+            /** Hobbs End */
+            hobbs_end: number;
+        };
+        /**
+         * FlightCompleteRequestWrapper
+         * @description Flight complete request wrapper
+         */
+        FlightCompleteRequestWrapper: {
+            flight_data: components["schemas"]["FlightCompleteRequest"];
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
         };
         /**
+         * HealthData
+         * @description Application health data
+         */
+        HealthData: {
+            /** Status */
+            status: string;
+            /** Message */
+            message: string;
+        };
+        /**
+         * HealthResponse
+         * @description Application health response wrapper
+         */
+        HealthResponse: {
+            health: components["schemas"]["HealthData"];
+        };
+        /**
          * LoginRequest
          * @description Login request body
          */
         LoginRequest: {
+            user: components["schemas"]["UserLoginData"];
+        };
+        /**
+         * MaintenanceWindowCreate
+         * @description Schema for creating a maintenance window
+         */
+        MaintenanceWindowCreate: {
+            /** Aircraft Id */
+            aircraft_id: number;
+            /**
+             * Start Time
+             * Format: date-time
+             */
+            start_time: string;
+            /**
+             * End Time
+             * Format: date-time
+             */
+            end_time: string;
+            /** Reason */
+            reason?: string | null;
+        };
+        /**
+         * MaintenanceWindowCreateRequest
+         * @description Maintenance window creation request wrapper
+         */
+        MaintenanceWindowCreateRequest: {
+            maintenance_window: components["schemas"]["MaintenanceWindowCreate"];
+        };
+        /**
+         * MaintenanceWindowListResponse
+         * @description Maintenance window list response
+         */
+        MaintenanceWindowListResponse: {
+            /** Maintenance Windows */
+            maintenance_windows: components["schemas"]["MaintenanceWindowResponse"][];
+            pagination: components["schemas"]["Pagination"];
+        };
+        /**
+         * MaintenanceWindowResponse
+         * @description Schema for maintenance window response
+         */
+        MaintenanceWindowResponse: {
+            /** Id */
+            id: number;
+            /** Club Id */
+            club_id: number;
+            /** Aircraft Id */
+            aircraft_id: number;
+            /**
+             * Start Time
+             * Format: date-time
+             */
+            start_time: string;
+            /**
+             * End Time
+             * Format: date-time
+             */
+            end_time: string;
+            /** Reason */
+            reason?: string | null;
+        };
+        /**
+         * MaintenanceWindowResponseWrapper
+         * @description Maintenance window response wrapper
+         */
+        MaintenanceWindowResponseWrapper: {
+            maintenance_window: components["schemas"]["MaintenanceWindowResponse"];
+        };
+        /**
+         * Pagination
+         * @description Pagination metadata
+         */
+        Pagination: {
+            /** Page */
+            page: number;
+            /** Limit */
+            limit: number;
+            /** Total */
+            total: number;
+        };
+        /**
+         * ReservationAircraftInfo
+         * @description Nested aircraft info
+         */
+        ReservationAircraftInfo: {
+            /** Id */
+            id: number;
+            /** Tail Number */
+            tail_number: string;
+            /** Model */
+            model: string;
+            /** Hourly Rate Usd */
+            hourly_rate_usd: number;
+        };
+        /**
+         * ReservationCreate
+         * @description Schema for creating a reservation
+         */
+        ReservationCreate: {
+            /** Aircraft Id */
+            aircraft_id: number;
+            /** Instructor Id */
+            instructor_id?: number | null;
+            /**
+             * Start Time
+             * Format: date-time
+             */
+            start_time: string;
+            /**
+             * End Time
+             * Format: date-time
+             */
+            end_time: string;
+            /** Notes */
+            notes?: string | null;
+        };
+        /**
+         * ReservationCreateRequest
+         * @description Reservation creation request wrapper
+         */
+        ReservationCreateRequest: {
+            reservation: components["schemas"]["ReservationCreate"];
+        };
+        /**
+         * ReservationListResponse
+         * @description Reservation list response
+         */
+        ReservationListResponse: {
+            /** Reservations */
+            reservations: components["schemas"]["ReservationResponse"][];
+            pagination: components["schemas"]["Pagination"];
+        };
+        /**
+         * ReservationMemberInfo
+         * @description Nested member info
+         */
+        ReservationMemberInfo: {
+            /** Id */
+            id: number;
+            /** Full Name */
+            full_name: string;
+            /** Email */
+            email: string;
+        };
+        /**
+         * ReservationResponse
+         * @description Schema for reservation response
+         */
+        ReservationResponse: {
+            /** Id */
+            id: number;
+            /** Club Id */
+            club_id: number;
+            /** Aircraft Id */
+            aircraft_id: number;
+            /** Member Id */
+            member_id: number;
+            /** Instructor Id */
+            instructor_id?: number | null;
+            /**
+             * Start Time
+             * Format: date-time
+             */
+            start_time: string;
+            /**
+             * End Time
+             * Format: date-time
+             */
+            end_time: string;
+            status: components["schemas"]["ReservationStatus"];
+            /** Hobbs Start */
+            hobbs_start?: number | null;
+            /** Hobbs End */
+            hobbs_end?: number | null;
+            /** Notes */
+            notes?: string | null;
+            aircraft?: components["schemas"]["ReservationAircraftInfo"] | null;
+            member?: components["schemas"]["ReservationMemberInfo"] | null;
+            instructor?: components["schemas"]["ReservationMemberInfo"] | null;
+        };
+        /**
+         * ReservationResponseWrapper
+         * @description Reservation response wrapper
+         */
+        ReservationResponseWrapper: {
+            reservation: components["schemas"]["ReservationResponse"];
+        };
+        /**
+         * ReservationStatus
+         * @description Reservation status enum
+         * @enum {string}
+         */
+        ReservationStatus: "confirmed" | "cancelled" | "completed";
+        /**
+         * ReservationUpdate
+         * @description Schema for updating a reservation (time window / instructor only)
+         */
+        ReservationUpdate: {
+            /** Instructor Id */
+            instructor_id?: number | null;
+            /** Start Time */
+            start_time?: string | null;
+            /** End Time */
+            end_time?: string | null;
+            /** Notes */
+            notes?: string | null;
+        };
+        /**
+         * ReservationUpdateRequest
+         * @description Reservation update request wrapper
+         */
+        ReservationUpdateRequest: {
+            reservation: components["schemas"]["ReservationUpdate"];
+        };
+        /**
+         * TokenResponse
+         * @description Login response body
+         */
+        TokenResponse: {
+            user: components["schemas"]["UserTokenData"];
+        };
+        /**
+         * UserCreate
+         * @description Schema for creating a new user
+         */
+        UserCreate: {
+            /**
+             * Email
+             * Format: email
+             */
+            email: string;
+            /** Password */
+            password: string;
+            /** Full Name */
+            full_name: string;
+            role: components["schemas"]["UserRole"];
+            certificate?: components["schemas"]["CertificateType"] | null;
+            /** Ratings */
+            ratings?: string | null;
+        };
+        /**
+         * UserCreateRequest
+         * @description User creation request wrapper
+         */
+        UserCreateRequest: {
+            user: components["schemas"]["UserCreate"];
+        };
+        /**
+         * UserListResponse
+         * @description User list response
+         */
+        UserListResponse: {
+            /** Users */
+            users: components["schemas"]["UserResponse"][];
+            pagination: components["schemas"]["Pagination"];
+        };
+        /**
+         * UserLoginData
+         * @description User login data
+         */
+        UserLoginData: {
             /**
              * Email
              * Format: email
@@ -67,10 +769,46 @@ export interface components {
             password: string;
         };
         /**
-         * TokenResponse
-         * @description Login response body
+         * UserResponse
+         * @description Schema for user response
          */
-        TokenResponse: {
+        UserResponse: {
+            /** Id */
+            id: number;
+            /** Club Id */
+            club_id: number;
+            /**
+             * Email
+             * Format: email
+             */
+            email: string;
+            /** Full Name */
+            full_name: string;
+            role: components["schemas"]["UserRole"];
+            certificate?: components["schemas"]["CertificateType"] | null;
+            /** Ratings */
+            ratings?: string | null;
+            /** Is Active */
+            is_active: boolean;
+        };
+        /**
+         * UserResponseWrapper
+         * @description User response wrapper
+         */
+        UserResponseWrapper: {
+            user: components["schemas"]["UserResponse"];
+        };
+        /**
+         * UserRole
+         * @description User role
+         * @enum {string}
+         */
+        UserRole: "member" | "instructor" | "admin";
+        /**
+         * UserTokenData
+         * @description User token data
+         */
+        UserTokenData: {
             /** Access Token */
             access_token: string;
             /**
@@ -118,7 +856,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["HealthResponse"];
                 };
             };
         };
@@ -143,6 +881,608 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TokenResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_aircraft_api_v1_aircraft__get: {
+        parameters: {
+            query?: {
+                page?: number;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AircraftListResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_aircraft_api_v1_aircraft__post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AircraftCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AircraftResponseWrapper"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_aircraft_api_v1_aircraft__aircraft_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                aircraft_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AircraftResponseWrapper"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_aircraft_api_v1_aircraft__aircraft_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                aircraft_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AircraftUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AircraftResponseWrapper"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_aircraft_schedule_api_v1_aircraft__aircraft_id__schedule_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                aircraft_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AircraftScheduleListResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_reservations_api_v1_reservations__get: {
+        parameters: {
+            query?: {
+                page?: number;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReservationListResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_reservation_api_v1_reservations__post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReservationCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReservationResponseWrapper"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_reservation_api_v1_reservations__reservation_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                reservation_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReservationResponseWrapper"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cancel_reservation_api_v1_reservations__reservation_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                reservation_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReservationResponseWrapper"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_reservation_api_v1_reservations__reservation_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                reservation_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReservationUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReservationResponseWrapper"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    complete_reservation_api_v1_reservations__reservation_id__complete_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                reservation_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FlightCompleteRequestWrapper"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReservationResponseWrapper"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    me_api_v1_users_me_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserResponseWrapper"];
+                };
+            };
+        };
+    };
+    list_instructors_api_v1_users_instructors_get: {
+        parameters: {
+            query?: {
+                page?: number;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserListResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    all_reservations_api_v1_admin_reservations_get: {
+        parameters: {
+            query?: {
+                page?: number;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReservationListResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_maintenance_api_v1_admin_maintenance_get: {
+        parameters: {
+            query?: {
+                page?: number;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MaintenanceWindowListResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_maintenance_api_v1_admin_maintenance_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MaintenanceWindowCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MaintenanceWindowResponseWrapper"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_maintenance_api_v1_admin_maintenance__window_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                window_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_users_api_v1_admin_users_get: {
+        parameters: {
+            query?: {
+                page?: number;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserListResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_user_api_v1_admin_users_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UserCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserResponseWrapper"];
                 };
             };
             /** @description Validation Error */

@@ -8,7 +8,7 @@ import { useUpdateReservation } from "@/hooks/useReservations";
 import { useInstructors } from "@/hooks/useInstructors";
 import { useReservations } from "@/hooks/useReservations";
 import { isAuthenticated } from "@/lib/auth";
-import type { ReservationUpdate } from "@/api/reservations.api";
+import type { components } from "@/api/schema";
 
 function toInputVal(iso: string) {
   // Convert ISO string to datetime-local input format
@@ -19,8 +19,10 @@ function toInputVal(iso: string) {
 export default function EditReservationPage() {
   const router = useRouter();
   const { id } = router.query;
-  const { data: reservations = [], isLoading } = useReservations();
-  const { data: instructors = [] } = useInstructors();
+  const { data: reservationsData, isLoading } = useReservations();
+  const reservations = reservationsData?.reservations ?? [];
+  const { data: instructorsData } = useInstructors();
+  const instructors = instructorsData?.users ?? [];
   const update = useUpdateReservation();
 
   const reservation = reservations.find((r) => r.id === parseInt(id as string));
@@ -52,11 +54,13 @@ export default function EditReservationPage() {
   const apiError = (update.error as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
 
   const onSubmit = async (values: { instructor_id: string; start_time: string; end_time: string; notes: string }) => {
-    const payload: ReservationUpdate = {
-      instructor_id: values.instructor_id ? parseInt(values.instructor_id) : undefined,
-      start_time: new Date(values.start_time).toISOString(),
-      end_time: new Date(values.end_time).toISOString(),
-      notes: values.notes || undefined,
+    const payload: components["schemas"]["ReservationUpdateRequest"] = {
+      reservation: {
+        instructor_id: values.instructor_id ? parseInt(values.instructor_id) : undefined,
+        start_time: new Date(values.start_time).toISOString(),
+        end_time: new Date(values.end_time).toISOString(),
+        notes: values.notes || undefined,
+      }
     };
     await update.mutateAsync({ id: reservation.id, data: payload });
     router.push("/reservations");

@@ -6,9 +6,10 @@ import { useForm } from "react-hook-form";
 import Layout from "@/components/Layout";
 import StatusBadge from "@/components/StatusBadge";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import { adminApi, type MaintenanceCreate } from "@/api/admin.api";
+import { adminApi } from "@/api/admin.api";
 import { useAircraft } from "@/hooks/useAircraft";
 import { isAuthenticated, getUserRole } from "@/lib/auth";
+import type { components } from "@/api/schema";
 
 function fmt(iso: string) {
   return new Date(iso).toLocaleString("en-US", {
@@ -34,28 +35,32 @@ export default function AdminPage() {
     }
   }, [router]);
 
-  const { data: reservations = [], isLoading: resLoading } = useQuery({
+  const { data: reservationsData, isLoading: resLoading } = useQuery({
     queryKey: ["admin_reservations"],
-    queryFn: adminApi.allReservations,
+    queryFn: () => adminApi.allReservations(),
     enabled: isAuthenticated() && getUserRole() === "admin",
   });
+  const reservations = reservationsData?.reservations ?? [];
 
-  const { data: maintenance = [], isLoading: maintLoading } = useQuery({
+  const { data: maintenanceData, isLoading: maintLoading } = useQuery({
     queryKey: ["admin_maintenance"],
-    queryFn: adminApi.listMaintenance,
+    queryFn: () => adminApi.listMaintenance(),
     enabled: isAuthenticated() && getUserRole() === "admin",
   });
+  const maintenance = maintenanceData?.maintenance_windows ?? [];
 
-  const { data: users = [], isLoading: usersLoading } = useQuery({
+  const { data: usersData, isLoading: usersLoading } = useQuery({
     queryKey: ["admin_users"],
-    queryFn: adminApi.listUsers,
+    queryFn: () => adminApi.listUsers(),
     enabled: isAuthenticated() && getUserRole() === "admin",
   });
+  const users = usersData?.users ?? [];
 
-  const { data: aircraft = [] } = useAircraft();
+  const { data: aircraftData } = useAircraft();
+  const aircraft = aircraftData?.aircraft ?? [];
 
   const createMaint = useMutation({
-    mutationFn: adminApi.addMaintenance,
+    mutationFn: (data: components["schemas"]["MaintenanceWindowCreateRequest"]) => adminApi.addMaintenance(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin_maintenance"] });
       qc.invalidateQueries({ queryKey: ["aircraft"] });
@@ -65,7 +70,7 @@ export default function AdminPage() {
   });
 
   const deleteMaint = useMutation({
-    mutationFn: adminApi.deleteMaintenance,
+    mutationFn: (id: number) => adminApi.deleteMaintenance(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin_maintenance"] });
       qc.invalidateQueries({ queryKey: ["aircraft"] });
@@ -73,7 +78,7 @@ export default function AdminPage() {
   });
 
   const createUser = useMutation({
-    mutationFn: adminApi.addUser,
+    mutationFn: (data: components["schemas"]["UserCreateRequest"]) => adminApi.addUser(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin_users"] });
       setShowUserForm(false);
@@ -88,12 +93,14 @@ export default function AdminPage() {
     reason: string;
   }>();
 
-  const userForm = useForm<{
+  type UserFormData = {
     email: string;
     password: string;
     full_name: string;
     role: "member" | "instructor" | "admin";
-  }>({
+  };
+
+  const userForm = useForm<UserFormData>({
     defaultValues: { role: "member" }
   });
 
@@ -101,10 +108,12 @@ export default function AdminPage() {
 
   const onSubmit = (data: { aircraft_id: string; start_time: string; end_time: string; reason: string }) => {
     createMaint.mutate({
-      aircraft_id: parseInt(data.aircraft_id),
-      start_time: toLocal(data.start_time),
-      end_time: toLocal(data.end_time),
-      reason: data.reason || undefined,
+      maintenance_window: {
+        aircraft_id: parseInt(data.aircraft_id),
+        start_time: toLocal(data.start_time),
+        end_time: toLocal(data.end_time),
+        reason: data.reason || undefined,
+      }
     });
   };
 
@@ -112,8 +121,8 @@ export default function AdminPage() {
   const sortedMaint = [...maintenance].sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime());
   const sortedUsers = [...users].sort((a, b) => a.full_name.localeCompare(b.full_name));
 
-  const onUserSubmit = (data: any) => {
-    createUser.mutate(data);
+  const onUserSubmit = (data: UserFormData) => {
+    createUser.mutate({ user: data });
   };
 
   return (

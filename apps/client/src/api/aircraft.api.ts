@@ -1,48 +1,26 @@
 import { api } from "@/lib/api";
+import type { components } from "@/api/schema";
 import type { AxiosRequestConfig } from "axios";
 
-export interface Aircraft {
-  id: number;
-  club_id: number;
-  tail_number: string;
-  model: string;
-  year: number;
-  hourly_rate_usd: number;
-  total_hobbs_hours: number;
-  status: "available" | "maintenance" | "retired";
-  notes?: string;
-}
-
-export interface AircraftScheduleItem {
-  id: number;
-  start_time: string;
-  end_time: string;
-  type: "reservation" | "maintenance";
-}
-
-export interface AircraftCreate {
-  tail_number: string;
-  model: string;
-  year: number;
-  hourly_rate_usd: number;
-  total_hobbs_hours?: number;
-  notes?: string;
-}
+type AircraftListResponse = components["schemas"]["AircraftListResponse"];
+type AircraftResponseWrapper = components["schemas"]["AircraftResponseWrapper"];
+type AircraftCreateRequest = components["schemas"]["AircraftCreateRequest"];
+type AircraftScheduleListResponse = components["schemas"]["AircraftScheduleListResponse"];
 
 export const aircraftApi = {
-  list: async (config?: AxiosRequestConfig): Promise<Aircraft[]> => {
+  list: async (config?: AxiosRequestConfig): Promise<AircraftListResponse> => {
     const res = await api.get("/api/v1/aircraft/", config);
     return res.data;
   },
-  get: async (id: number, config?: AxiosRequestConfig): Promise<Aircraft> => {
+  get: async (id: number, config?: AxiosRequestConfig): Promise<AircraftResponseWrapper> => {
     const res = await api.get(`/api/v1/aircraft/${id}`, config);
     return res.data;
   },
-  getSchedule: async (id: number, config?: AxiosRequestConfig): Promise<AircraftScheduleItem[]> => {
+  getSchedule: async (id: number, config?: AxiosRequestConfig): Promise<AircraftScheduleListResponse> => {
     const res = await api.get(`/api/v1/aircraft/${id}/schedule`, config);
     return res.data;
   },
-  create: async (data: AircraftCreate, config?: AxiosRequestConfig): Promise<Aircraft> => {
+  create: async (data: AircraftCreateRequest, config?: AxiosRequestConfig): Promise<AircraftResponseWrapper> => {
     const res = await api.post("/api/v1/aircraft/", data, config);
     return res.data;
   },

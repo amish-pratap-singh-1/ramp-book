@@ -5,7 +5,7 @@ import { isAuthenticated } from "@/lib/auth";
 export function useInstructors() {
   return useQuery({
     queryKey: ["instructors"],
-    queryFn: usersApi.instructors,
+    queryFn: () => usersApi.instructors(),
     enabled: isAuthenticated(),
     staleTime: 120_000,
   });

@@ -1,11 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { reservationsApi, type ReservationCreate, type ReservationUpdate, type FlightComplete } from "@/api/reservations.api";
+import { reservationsApi } from "@/api/reservations.api";
 import { isAuthenticated } from "@/lib/auth";
+import type { components } from "@/api/schema";
+
+type ReservationCreateRequest = components["schemas"]["ReservationCreateRequest"];
+type ReservationUpdateRequest = components["schemas"]["ReservationUpdateRequest"];
+type FlightCompleteRequestWrapper = components["schemas"]["FlightCompleteRequestWrapper"];
 
 export function useReservations() {
   return useQuery({
     queryKey: ["reservations"],
-    queryFn: reservationsApi.list,
+    queryFn: () => reservationsApi.list(),
     enabled: isAuthenticated(),
   });
 }
@@ -13,7 +18,7 @@ export function useReservations() {
 export function useCreateReservation() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: ReservationCreate) => reservationsApi.create(data),
+    mutationFn: (data: ReservationCreateRequest) => reservationsApi.create(data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["reservations"] }),
   });
 }
@@ -21,7 +26,7 @@ export function useCreateReservation() {
 export function useUpdateReservation() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: ReservationUpdate }) =>
+    mutationFn: ({ id, data }: { id: number; data: ReservationUpdateRequest }) =>
       reservationsApi.update(id, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["reservations"] }),
   });
@@ -38,7 +43,7 @@ export function useCancelReservation() {
 export function useCompleteReservation() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: FlightComplete }) =>
+    mutationFn: ({ id, data }: { id: number; data: FlightCompleteRequestWrapper }) =>
       reservationsApi.complete(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["reservations"] });

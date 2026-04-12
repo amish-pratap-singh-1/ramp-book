@@ -15,7 +15,8 @@ const adminNav = [
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const { data: me } = useMe();
+  const { data: meData } = useMe();
+  const me = meData?.user;
   const role = getUserRole();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 

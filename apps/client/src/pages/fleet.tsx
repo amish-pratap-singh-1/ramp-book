@@ -7,11 +7,14 @@ import StatusBadge from "@/components/StatusBadge";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useAircraft } from "@/hooks/useAircraft";
 import { isAuthenticated } from "@/lib/auth";
-import type { Aircraft } from "@/api/aircraft.api";
+import type { components } from "@/api/schema";
+
+type Aircraft = components["schemas"]["AircraftResponse"];
 
 export default function FleetPage() {
   const router = useRouter();
-  const { data: aircraft = [], isLoading } = useAircraft();
+  const { data: aircraftData, isLoading } = useAircraft();
+  const aircraft = aircraftData?.aircraft ?? [];
 
   useEffect(() => {
     if (!isAuthenticated()) router.replace("/login");

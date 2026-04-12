@@ -14,7 +14,7 @@ import { useAircraft } from "@/hooks/useAircraft";
 import { useInstructors } from "@/hooks/useInstructors";
 import { isAuthenticated } from "@/lib/auth";
 import { aircraftApi } from "@/api/aircraft.api";
-import type { ReservationCreate } from "@/api/reservations.api";
+import type { components } from "@/api/schema";
 
 const localizer = dateFnsLocalizer({
   format,
@@ -28,8 +28,10 @@ export default function NewReservationPage() {
   const router = useRouter();
   const preselect = router.query.aircraft as string | undefined;
 
-  const { data: aircraft = [], isLoading: acLoading } = useAircraft();
-  const { data: instructors = [] } = useInstructors();
+  const { data: aircraftData, isLoading: acLoading } = useAircraft();
+  const aircraft = aircraftData?.aircraft ?? [];
+  const { data: instructorsData } = useInstructors();
+  const instructors = instructorsData?.users ?? [];
   const create = useCreateReservation();
 
   const [selectedAircraft, setSelectedAircraft] = useState<string>("");
@@ -53,6 +55,7 @@ export default function NewReservationPage() {
   const { data: schedule = [], isLoading: scheduleLoading } = useQuery({
     queryKey: ["aircraft_schedule", selectedAircraft],
     queryFn: () => aircraftApi.getSchedule(parseInt(selectedAircraft)),
+    select: (data) => data.schedules,
     enabled: !!selectedAircraft,
   });
 
@@ -60,12 +63,14 @@ export default function NewReservationPage() {
 
   const onSubmit = async (values: { instructor_id: string; notes: string }) => {
     if (!draftSlot || !selectedAircraft) return;
-    const payload: ReservationCreate = {
-      aircraft_id: parseInt(selectedAircraft),
-      instructor_id: values.instructor_id ? parseInt(values.instructor_id) : undefined,
-      start_time: draftSlot.start.toISOString(),
-      end_time: draftSlot.end.toISOString(),
-      notes: values.notes || undefined,
+    const payload: components["schemas"]["ReservationCreateRequest"] = {
+      reservation: {
+        aircraft_id: parseInt(selectedAircraft),
+        instructor_id: values.instructor_id ? parseInt(values.instructor_id) : undefined,
+        start_time: draftSlot.start.toISOString(),
+        end_time: draftSlot.end.toISOString(),
+        notes: values.notes || undefined,
+      }
     };
     await create.mutateAsync(payload);
     router.push("/reservations");

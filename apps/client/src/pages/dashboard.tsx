@@ -18,9 +18,13 @@ function fmt(iso: string) {
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { data: me, isLoading: meLoading } = useMe();
-  const { data: reservations = [] } = useReservations();
-  const { data: aircraft = [] } = useAircraft();
+  const { data: meData, isLoading: meLoading } = useMe();
+  const { data: reservationsData } = useReservations();
+  const { data: aircraftData } = useAircraft();
+
+  const me = meData?.user;
+  const reservations = reservationsData?.reservations ?? [];
+  const aircraft = aircraftData?.aircraft ?? [];
 
   useEffect(() => {
     if (!isAuthenticated()) router.replace("/login");

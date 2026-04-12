@@ -48,7 +48,7 @@ export default function LoginPage() {
                 <label className="label" htmlFor="email">Email</label>
                 <input
                   id="email"
-                  {...register("email")}
+                  {...register("user.email")}
                   type="email"
                   placeholder="you@cedarvalleyfc.com"
                   className="input"
@@ -60,7 +60,7 @@ export default function LoginPage() {
                 <label className="label" htmlFor="password">Password</label>
                 <input
                   id="password"
-                  {...register("password")}
+                  {...register("user.password")}
                   type="password"
                   placeholder="••••••••"
                   className="input"

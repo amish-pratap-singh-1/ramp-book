@@ -7,7 +7,9 @@ import StatusBadge from "@/components/StatusBadge";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useReservations, useCancelReservation, useCompleteReservation } from "@/hooks/useReservations";
 import { isAuthenticated } from "@/lib/auth";
-import type { Reservation, FlightComplete } from "@/api/reservations.api";
+import type { components } from "@/api/schema";
+
+type Reservation = components["schemas"]["ReservationResponse"];
 
 function fmt(iso: string) {
   return new Date(iso).toLocaleString("en-US", {
@@ -21,7 +23,8 @@ function hrs(r: Reservation) {
 
 export default function ReservationsPage() {
   const router = useRouter();
-  const { data: reservations = [], isLoading } = useReservations();
+  const { data: reservationsData, isLoading } = useReservations();
+  const reservations = reservationsData?.reservations ?? [];
   const cancel = useCancelReservation();
   const complete = useCompleteReservation();
 
@@ -61,7 +64,12 @@ export default function ReservationsPage() {
       setError("Hobbs end must be greater than hobbs start");
       return;
     }
-    await complete.mutateAsync({ id: logFlight.id, data: { hobbs_start: s, hobbs_end: e } as FlightComplete });
+    await complete.mutateAsync({ 
+      id: logFlight.id, 
+      data: { 
+        flight_data: { hobbs_start: s, hobbs_end: e } 
+      } 
+    });
     setLogFlight(null);
     setHobbs({ hobbs_start: "", hobbs_end: "" });
   };
