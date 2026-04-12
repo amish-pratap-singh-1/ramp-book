@@ -5,6 +5,7 @@ import Link from "next/link";
 import Layout from "@/components/Layout";
 import StatusBadge from "@/components/StatusBadge";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import QueryBoundary from "@/components/QueryBoundary";
 import { useReservations, useCancelReservation, useCompleteReservation } from "@/hooks/useReservations";
 import { isAuthenticated } from "@/lib/auth";
 import type { components } from "@/api/schema";
@@ -37,7 +38,7 @@ export default function ReservationsPage() {
     if (!isAuthenticated()) router.replace("/login");
   }, [router]);
 
-  if (isLoading) return <LoadingSpinner fullPage />;
+  // Removed manual isLoading check, handled by QueryBoundary below
 
   const now = new Date();
   const upcoming = reservations.filter(
@@ -80,96 +81,103 @@ export default function ReservationsPage() {
         <title>My Bookings — RampBook</title>
       </Head>
       <Layout>
-        <div className="page-header">
-          <h1 className="page-title">My Bookings</h1>
-          <p className="page-sub">Manage your flight reservations</p>
-        </div>
-
-        <div className="page-body space-y-6">
-          {/* Actions + tabs */}
-          <div className="flex items-center justify-between flex-wrap gap-3">
-            <div className="tabs">
-              <button className={tab === "upcoming" ? "tab-active" : "tab"} onClick={() => setTab("upcoming")}>
-                Upcoming ({upcoming.length})
-              </button>
-              <button className={tab === "past" ? "tab-active" : "tab"} onClick={() => setTab("past")}>
-                Past ({past.length})
-              </button>
-            </div>
-            <Link href="/reservations/new" className="btn-primary">✈ New Booking</Link>
+        <QueryBoundary 
+          isLoading={isLoading} 
+          data={reservationsData} 
+          loadingComponent={<LoadingSpinner fullPage />}
+        >
+          <div className="page-header">
+            <h1 className="page-title">My Bookings</h1>
+            <p className="page-sub">Manage your flight reservations</p>
           </div>
 
-          {shown.length === 0 ? (
-            <div className="empty">
-              <div className="empty-icon">📅</div>
-              <div className="empty-title">{tab === "upcoming" ? "No upcoming reservations" : "No past reservations"}</div>
-              {tab === "upcoming" && (
-                <p className="text-sm"><Link href="/reservations/new" className="text-accent hover:underline">Book a flight</Link> to get started</p>
-              )}
+          <div className="page-body space-y-6">
+            {/* Actions + tabs */}
+            <div className="flex items-center justify-between flex-wrap gap-3">
+              <div className="tabs">
+                <button className={tab === "upcoming" ? "tab-active" : "tab"} onClick={() => setTab("upcoming")}>
+                  Upcoming ({upcoming.length})
+                </button>
+                <button className={tab === "past" ? "tab-active" : "tab"} onClick={() => setTab("past")}>
+                  Past ({past.length})
+                </button>
+              </div>
+              <Link href="/reservations/new" className="btn-primary">✈ New Booking</Link>
             </div>
-          ) : (
-            <div className="tbl-wrap">
-              <table className="tbl">
-                <thead>
-                  <tr>
-                    <th>Aircraft</th>
-                    <th>Start</th>
-                    <th>End</th>
-                    <th>Hrs</th>
-                    <th>Instructor</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {shown.map((r) => (
-                    <tr key={r.id}>
-                      <td>
-                        <span className="font-bold text-accent font-mono">{r.aircraft?.tail_number}</span>
-                        <span className="block text-xs text-secondary">{r.aircraft?.model}</span>
-                      </td>
-                      <td className="whitespace-nowrap text-secondary">{fmt(r.start_time)}</td>
-                      <td className="whitespace-nowrap text-secondary">{fmt(r.end_time)}</td>
-                      <td className="text-secondary">{hrs(r)}</td>
-                      <td className="text-secondary">{r.instructor?.full_name ?? <span className="text-muted italic">Solo</span>}</td>
-                      <td><StatusBadge status={r.status} /></td>
-                      <td>
-                        <div className="flex items-center gap-2">
-                          {r.status === "confirmed" && new Date(r.end_time) > now && (
-                            <>
-                              <Link href={`/reservations/${r.id}/edit`} className="btn-ghost btn-sm">Edit</Link>
-                              <button
-                                onClick={() => handleCancel(r.id)}
-                                disabled={cancel.isPending}
-                                className="btn-danger btn-sm"
-                                id={`cancel-res-${r.id}`}
-                              >
-                                Cancel
-                              </button>
-                            </>
-                          )}
-                          {r.status === "confirmed" && new Date(r.end_time) <= now && (
-                            <button
-                              onClick={() => { setLogFlight(r); setHobbs({ hobbs_start: "", hobbs_end: "" }); setError(""); }}
-                              className="btn-primary btn-sm"
-                              id={`log-flight-${r.id}`}
-                            >
-                              Log Flight
-                            </button>
-                          )}
-                          {r.status === "completed" && r.hobbs_end && (
-                            <span className="text-xs text-secondary font-mono">{r.hobbs_start?.toFixed(1)} → {r.hobbs_end?.toFixed(1)}</span>
-                          )}
-                        </div>
-                      </td>
+
+            {shown.length === 0 ? (
+              <div className="empty">
+                <div className="empty-icon">📅</div>
+                <div className="empty-title">{tab === "upcoming" ? "No upcoming reservations" : "No past reservations"}</div>
+                {tab === "upcoming" && (
+                  <p className="text-sm"><Link href="/reservations/new" className="text-accent hover:underline">Book a flight</Link> to get started</p>
+                )}
+              </div>
+            ) : (
+              <div className="tbl-wrap">
+                <table className="tbl">
+                  <thead>
+                    <tr>
+                      <th>Aircraft</th>
+                      <th>Start</th>
+                      <th>End</th>
+                      <th>Hrs</th>
+                      <th>Instructor</th>
+                      <th>Status</th>
+                      <th>Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
+                  </thead>
+                  <tbody>
+                    {shown.map((r) => (
+                      <tr key={r.id}>
+                        <td>
+                          <span className="font-bold text-accent font-mono">{r.aircraft?.tail_number}</span>
+                          <span className="block text-xs text-secondary">{r.aircraft?.model}</span>
+                        </td>
+                        <td className="whitespace-nowrap text-secondary">{fmt(r.start_time)}</td>
+                        <td className="whitespace-nowrap text-secondary">{fmt(r.end_time)}</td>
+                        <td className="text-secondary">{hrs(r)}</td>
+                        <td className="text-secondary">{r.instructor?.full_name ?? <span className="text-muted italic">Solo</span>}</td>
+                        <td><StatusBadge status={r.status} /></td>
+                        <td>
+                          <div className="flex items-center gap-2">
+                            {r.status === "confirmed" && new Date(r.end_time) > now && (
+                              <>
+                                <Link href={`/reservations/${r.id}/edit`} className="btn-ghost btn-sm">Edit</Link>
+                                <button
+                                  onClick={() => handleCancel(r.id)}
+                                  disabled={cancel.isPending}
+                                  className="btn-danger btn-sm"
+                                  id={`cancel-res-${r.id}`}
+                                >
+                                  Cancel
+                                </button>
+                              </>
+                            )}
+                            {r.status === "confirmed" && new Date(r.end_time) <= now && (
+                              <button
+                                onClick={() => { setLogFlight(r); setHobbs({ hobbs_start: "", hobbs_end: "" }); setError(""); }}
+                                className="btn-primary btn-sm"
+                                id={`log-flight-${r.id}`}
+                              >
+                                Log Flight
+                              </button>
+                            )}
+                            {r.status === "completed" && r.hobbs_end && (
+                              <span className="text-xs text-secondary font-mono">{r.hobbs_start?.toFixed(1)} → {r.hobbs_end?.toFixed(1)}</span>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </QueryBoundary>
       </Layout>
+
 
       {/* Log Flight Modal */}
       {logFlight && (

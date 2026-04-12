@@ -9,6 +9,7 @@ import { enUS } from "date-fns/locale";
 
 import Layout from "@/components/Layout";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import QueryBoundary from "@/components/QueryBoundary";
 import { useCreateReservation } from "@/hooks/useReservations";
 import { useAircraft } from "@/hooks/useAircraft";
 import { useInstructors } from "@/hooks/useInstructors";
@@ -59,7 +60,7 @@ export default function NewReservationPage() {
     enabled: !!selectedAircraft,
   });
 
-  if (acLoading) return <LoadingSpinner fullPage />;
+  // Removed manual acLoading check, handled by QueryBoundary below
 
   const onSubmit = async (values: { instructor_id: string; notes: string }) => {
     if (!draftSlot || !selectedAircraft) return;
@@ -137,135 +138,142 @@ export default function NewReservationPage() {
         <title>New Booking — RampBook</title>
       </Head>
       <Layout>
-        <div className="page-header">
-          <h1 className="page-title">New Booking</h1>
-          <p className="page-sub">Select an aircraft and drag across the calendar to reserve</p>
-        </div>
+        <QueryBoundary 
+          isLoading={acLoading} 
+          data={aircraftData} 
+          loadingComponent={<LoadingSpinner fullPage />}
+        >
+          <div className="page-header">
+            <h1 className="page-title">New Booking</h1>
+            <p className="page-sub">Select an aircraft and drag across the calendar to reserve</p>
+          </div>
 
-        <div className="page-body">
-          <div className="flex flex-col xl:flex-row gap-8">
-            <div className="flex-1 min-w-0 bg-surface border border-edge rounded-2xl p-5 flex flex-col gap-4 shadow-xl">
-              <div className="field">
-                <label className="label">1. Select Aircraft</label>
-                <select
-                  value={selectedAircraft}
-                  onChange={(e) => {
-                    setSelectedAircraft(e.target.value);
-                    setDraftSlot(null);
-                    setCurrentDate(new Date()); // Reset the calendar when aircraft changes
-                    setCurrentView("week");
-                  }}
-                  className="select-input max-w-sm"
-                >
-                  <option value="">— Choose an aircraft —</option>
-                  {available.map((a) => (
-                    <option key={a.id} value={String(a.id)}>
-                      {a.tail_number} · {a.model} (${a.hourly_rate_usd}/hr)
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {selectedAircraft ? (
-                <div className="h-[750px] mt-4 relative">
-                  {scheduleLoading && (
-                    <div className="absolute inset-0 bg-surface/50 z-10 flex items-center justify-center">
-                      <LoadingSpinner />
-                    </div>
-                  )}
-                  <Calendar
-                    localizer={localizer}
-                    events={events}
-                    startAccessor="start"
-                    endAccessor="end"
-                    date={currentDate}
-                    onNavigate={(date) => setCurrentDate(date)}
-                    view={currentView}
-                    onView={(view) => setCurrentView(view)}
-                    views={["week", "day"]}
-                    selectable
-                    onSelectSlot={handleSelectSlot}
-                    eventPropGetter={eventPropGetter}
-                    step={30}
-                    timeslots={2}
-                    min={new Date(0, 0, 0, 6, 0, 0)} // Starts at 6 AM
-                    max={new Date(0, 0, 0, 22, 0, 0)} // Ends at 10 PM
-                  />
+          <div className="page-body">
+            <div className="flex flex-col xl:flex-row gap-8">
+              <div className="flex-1 min-w-0 bg-surface border border-edge rounded-2xl p-5 flex flex-col gap-4 shadow-xl">
+                <div className="field">
+                  <label className="label">1. Select Aircraft</label>
+                  <select
+                    value={selectedAircraft}
+                    onChange={(e) => {
+                      setSelectedAircraft(e.target.value);
+                      setDraftSlot(null);
+                      setCurrentDate(new Date()); // Reset the calendar when aircraft changes
+                      setCurrentView("week");
+                    }}
+                    className="select-input max-w-sm"
+                  >
+                    <option value="">— Choose an aircraft —</option>
+                    {available.map((a) => (
+                      <option key={a.id} value={String(a.id)}>
+                        {a.tail_number} · {a.model} (${a.hourly_rate_usd}/hr)
+                      </option>
+                    ))}
+                  </select>
                 </div>
-              ) : (
-                <div className="h-[400px] border border-edge border-dashed rounded-xl flex items-center justify-center text-muted mt-4">
-                  Select an aircraft to view availability
-                </div>
-              )}
-            </div>
 
-            <div className="w-full xl:w-96 flex-shrink-0">
-              <div className="card sticky top-24 shadow-2xl border-accent/20">
-                <h2 className="section-title mb-6">2. Confirm Details</h2>
-
-                {!draftSlot ? (
-                  <div className="text-secondary text-sm flex items-start gap-4 p-4 bg-base rounded-xl border border-edge">
-                    <div className="w-10 h-10 rounded-full bg-surface border border-edge flex items-center justify-center text-xl flex-shrink-0 mt-1">
-                      👆
-                    </div>
-                    <div>
-                      <div className="font-bold text-primary mb-1">Pick a time slot</div>
-                      Drag your cursor across empty spaces on the calendar grid to block off your preferred departure and return times.
-                    </div>
-                  </div>
-                ) : (
-                  <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
-                    <div className="bg-base p-4 rounded-xl border border-edge">
-                      <div className="text-[10px] font-bold text-muted uppercase tracking-widest mb-2">Selected Window</div>
-                      <div className="text-primary font-bold text-lg mb-1">{format(draftSlot.start, "MMM do, yyyy")}</div>
-                      <div className="text-secondary text-sm">
-                        {format(draftSlot.start, "h:mm a")} <span className="mx-2 text-muted">→</span> {format(draftSlot.end, "h:mm a")}
-                      </div>
-                    </div>
-
-                    <div className="field">
-                      <label className="label">Flight Instructor <span className="text-muted font-normal normal-case">(optional)</span></label>
-                      <select {...register("instructor_id")} className="select-input">
-                        <option value="">— No instructor (solo) —</option>
-                        {instructors.map((i) => (
-                          <option key={i.id} value={String(i.id)}>
-                            {i.full_name} · {i.ratings ?? "CFI"}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className="field">
-                      <label className="label">Flight Notes <span className="text-muted font-normal normal-case">(optional)</span></label>
-                      <textarea
-                        {...register("notes")}
-                        className="input resize-none"
-                        rows={3}
-                        placeholder="e.g. IFR practice, cross-country to KDAL…"
-                      />
-                    </div>
-
-                    {create.isError && (
-                      <div className="bg-danger/10 border border-danger/20 rounded-xl px-4 py-3 text-sm text-danger">
-                        {apiError ?? "Booking failed — double booking detected."}
+                {selectedAircraft ? (
+                  <div className="h-[750px] mt-4 relative">
+                    {scheduleLoading && (
+                      <div className="absolute inset-0 bg-surface/50 z-10 flex items-center justify-center">
+                        <LoadingSpinner />
                       </div>
                     )}
-
-                    <div className="mt-2 pt-4 border-t border-edge flex flex-col gap-3">
-                      <button type="submit" disabled={create.isPending} className="btn-primary w-full justify-center">
-                        {create.isPending ? "Validating & Booking…" : "Confirm Booking →"}
-                      </button>
-                      <button type="button" onClick={() => setDraftSlot(null)} className="btn-ghost w-full justify-center text-secondary">
-                        Discard & Reselect Time
-                      </button>
-                    </div>
-                  </form>
+                    <Calendar
+                      localizer={localizer}
+                      events={events}
+                      startAccessor="start"
+                      endAccessor="end"
+                      date={currentDate}
+                      onNavigate={(date) => setCurrentDate(date)}
+                      view={currentView}
+                      onView={(view) => setCurrentView(view)}
+                      views={["week", "day"]}
+                      selectable
+                      onSelectSlot={handleSelectSlot}
+                      eventPropGetter={eventPropGetter}
+                      step={30}
+                      timeslots={2}
+                      min={new Date(0, 0, 0, 6, 0, 0)} // Starts at 6 AM
+                      max={new Date(0, 0, 0, 22, 0, 0)} // Ends at 10 PM
+                    />
+                  </div>
+                ) : (
+                  <div className="h-[400px] border border-edge border-dashed rounded-xl flex items-center justify-center text-muted mt-4">
+                    Select an aircraft to view availability
+                  </div>
                 )}
+              </div>
+
+              <div className="w-full xl:w-96 flex-shrink-0">
+                <div className="card sticky top-24 shadow-2xl border-accent/20">
+                  <h2 className="section-title mb-6">2. Confirm Details</h2>
+
+                  {!draftSlot ? (
+                    <div className="text-secondary text-sm flex items-start gap-4 p-4 bg-base rounded-xl border border-edge">
+                      <div className="w-10 h-10 rounded-full bg-surface border border-edge flex items-center justify-center text-xl flex-shrink-0 mt-1">
+                        👆
+                      </div>
+                      <div>
+                        <div className="font-bold text-primary mb-1">Pick a time slot</div>
+                        Drag your cursor across empty spaces on the calendar grid to block off your preferred departure and return times.
+                      </div>
+                    </div>
+                  ) : (
+                    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
+                      <div className="bg-base p-4 rounded-xl border border-edge">
+                        <div className="text-[10px] font-bold text-muted uppercase tracking-widest mb-2">Selected Window</div>
+                        <div className="text-primary font-bold text-lg mb-1">{format(draftSlot.start, "MMM do, yyyy")}</div>
+                        <div className="text-secondary text-sm">
+                          {format(draftSlot.start, "h:mm a")} <span className="mx-2 text-muted">→</span> {format(draftSlot.end, "h:mm a")}
+                        </div>
+                      </div>
+
+                      <div className="field">
+                        <label className="label">Flight Instructor <span className="text-muted font-normal normal-case">(optional)</span></label>
+                        <select {...register("instructor_id")} className="select-input">
+                          <option value="">— No instructor (solo) —</option>
+                          {instructors.map((i) => (
+                            <option key={i.id} value={String(i.id)}>
+                              {i.full_name} · {i.ratings ?? "CFI"}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="field">
+                        <label className="label">Flight Notes <span className="text-muted font-normal normal-case">(optional)</span></label>
+                        <textarea
+                          {...register("notes")}
+                          className="input resize-none"
+                          rows={3}
+                          placeholder="e.g. IFR practice, cross-country to KDAL…"
+                        />
+                      </div>
+
+                      {create.isError && (
+                        <div className="bg-danger/10 border border-danger/20 rounded-xl px-4 py-3 text-sm text-danger">
+                          {apiError ?? "Booking failed — double booking detected."}
+                        </div>
+                      )}
+
+                      <div className="mt-2 pt-4 border-t border-edge flex flex-col gap-3">
+                        <button type="submit" disabled={create.isPending} className="btn-primary w-full justify-center">
+                          {create.isPending ? "Validating & Booking…" : "Confirm Booking →"}
+                        </button>
+                        <button type="button" onClick={() => setDraftSlot(null)} className="btn-ghost w-full justify-center text-secondary">
+                          Discard & Reselect Time
+                        </button>
+                      </div>
+                    </form>
+                  )}
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </QueryBoundary>
       </Layout>
+
     </>
   );
 }

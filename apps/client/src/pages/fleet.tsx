@@ -5,6 +5,7 @@ import Link from "next/link";
 import Layout from "@/components/Layout";
 import StatusBadge from "@/components/StatusBadge";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import QueryBoundary from "@/components/QueryBoundary";
 import { useAircraft } from "@/hooks/useAircraft";
 import { isAuthenticated } from "@/lib/auth";
 import type { components } from "@/api/schema";
@@ -20,7 +21,7 @@ export default function FleetPage() {
     if (!isAuthenticated()) router.replace("/login");
   }, [router]);
 
-  if (isLoading) return <LoadingSpinner fullPage />;
+  // Removed manual isLoading check, handled by QueryBoundary below
 
   return (
     <>
@@ -29,27 +30,34 @@ export default function FleetPage() {
         <meta name="description" content="Browse available aircraft at Cedar Valley Flying Club" />
       </Head>
       <Layout>
-        <div className="page-header">
-          <h1 className="page-title">Aircraft Fleet</h1>
-          <p className="page-sub">{aircraft.length} aircraft registered · Cedar Valley Flying Club</p>
-        </div>
+        <QueryBoundary 
+          isLoading={isLoading} 
+          data={aircraftData} 
+          loadingComponent={<LoadingSpinner fullPage />}
+        >
+          <div className="page-header">
+            <h1 className="page-title">Aircraft Fleet</h1>
+            <p className="page-sub">{aircraft.length} aircraft registered · Cedar Valley Flying Club</p>
+          </div>
 
-        <div className="page-body">
-          {aircraft.length === 0 ? (
-            <div className="empty">
-              <div className="empty-icon">✈</div>
-              <div className="empty-title">No aircraft in the fleet</div>
-              <p>Contact your club admin to add aircraft.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-              {aircraft.map((ac: Aircraft) => (
-                <AircraftCard key={ac.id} ac={ac} />
-              ))}
-            </div>
-          )}
-        </div>
+          <div className="page-body">
+            {aircraft.length === 0 ? (
+              <div className="empty">
+                <div className="empty-icon">✈</div>
+                <div className="empty-title">No aircraft in the fleet</div>
+                <p>Contact your club admin to add aircraft.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                {aircraft.map((ac: Aircraft) => (
+                  <AircraftCard key={ac.id} ac={ac} />
+                ))}
+              </div>
+            )}
+          </div>
+        </QueryBoundary>
       </Layout>
+
     </>
   );
 }
