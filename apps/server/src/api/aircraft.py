@@ -4,8 +4,6 @@ from fastapi import APIRouter, Query, Request
 
 from src.decorators.auth import protected
 from src.entities.user import UserRole
-from src.repositories.aircraft import AircraftRepository
-from src.repositories.users import UserRepository
 from src.schemas.aircraft import (
     AircraftCreateRequest,
     AircraftListResponse,
@@ -14,12 +12,13 @@ from src.schemas.aircraft import (
     AircraftScheduleListResponse,
     AircraftUpdateRequest,
 )
-from src.svc.errsvc import ResourceNotFoundError, UserNotFoundError
+from src.svc.aircraftsvc import AircraftSvc
+from src.svc.usrsvc import UsrSvc
 
 router = APIRouter(prefix="/aircraft", tags=["Aircraft"])
 
-aircraft_repo = AircraftRepository()
-user_repo = UserRepository()
+aircraft_svc = AircraftSvc()
+usr_svc = UsrSvc()
 
 
 @router.get("/", response_model=AircraftListResponse)
@@ -31,11 +30,9 @@ async def list_aircraft(
 ) -> AircraftListResponse:
     """List all aircraft in the club fleet"""
     user_id = int(request.state.user["sub"])
-    user = await user_repo.get_by_id(user_id)
-    if not user:
-        raise UserNotFoundError()
+    user = await usr_svc.get_me(user_id)
     
-    aircraft, total = await aircraft_repo.get_all(user.club_id, page, limit)
+    aircraft, total = await aircraft_svc.list_aircraft(user.club_id, page, limit)
     
     return {
         "aircrafts": [AircraftResponse.model_validate(a) for a in aircraft],
@@ -51,9 +48,7 @@ async def list_aircraft(
 @protected()
 async def get_aircraft(aircraft_id: int, request: Request) -> AircraftResponseWrapper:
     """Get a single aircraft by ID"""
-    aircraft = await aircraft_repo.get_by_id(aircraft_id)
-    if not aircraft:
-        raise ResourceNotFoundError("Aircraft not found")
+    aircraft = await aircraft_svc.get_aircraft(aircraft_id)
     return {"aircraft": AircraftResponse.model_validate(aircraft)}
 
 
@@ -64,11 +59,7 @@ async def get_aircraft_schedule(
     request: Request
 ) -> AircraftScheduleListResponse:
     """Get non-identifying overlap schedule for an aircraft to power UI blocking"""
-    aircraft = await aircraft_repo.get_by_id(aircraft_id)
-    if not aircraft:
-        raise ResourceNotFoundError("Aircraft not found")
-    
-    schedules = await aircraft_repo.get_schedule(aircraft_id)
+    schedules = await aircraft_svc.get_schedule(aircraft_id)
     
     # Simple pagination for schedule (all items for now but wrapped)
     return {
@@ -88,11 +79,9 @@ async def create_aircraft(
 ) -> AircraftResponseWrapper:
     """Create a new aircraft (admin only)"""
     user_id = int(request.state.user["sub"])
-    user = await user_repo.get_by_id(user_id)
-    if not user:
-        raise UserNotFoundError()
+    user = await usr_svc.get_me(user_id)
     
-    aircraft = await aircraft_repo.create(user.club_id, req.aircraft)
+    aircraft = await aircraft_svc.create_aircraft(user.club_id, req.aircraft)
     return {"aircraft": AircraftResponse.model_validate(aircraft)}
 
 
@@ -102,7 +91,5 @@ async def update_aircraft(
     aircraft_id: int, req: AircraftUpdateRequest, request: Request
 ) -> AircraftResponseWrapper:
     """Update aircraft details (admin only)"""
-    aircraft = await aircraft_repo.update(aircraft_id, req.aircraft)
-    if not aircraft:
-        raise ResourceNotFoundError("Aircraft not found")
+    aircraft = await aircraft_svc.update_aircraft(aircraft_id, req.aircraft)
     return {"aircraft": AircraftResponse.model_validate(aircraft)}

@@ -20,13 +20,15 @@ from src.schemas.user import (
     UserResponse,
     UserResponseWrapper,
 )
-from src.svc.errsvc import ResourceNotFoundError, UserNotFoundError
+from src.svc.aircraftsvc import AircraftSvc
+from src.svc.reservationsvc import ReservationSvc
+from src.svc.usrsvc import UsrSvc
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
-res_repo = ReservationRepository()
-maint_repo = MaintenanceRepository()
-user_repo = UserRepository()
+aircraft_svc = AircraftSvc()
+res_svc = ReservationSvc()
+usr_svc = UsrSvc()
 
 
 @router.get("/reservations", response_model=ReservationListResponse)
@@ -38,11 +40,12 @@ async def all_reservations(
 ) -> ReservationListResponse:
     """Get all reservations across the club (admin only)"""
     user_id = int(request.state.user["sub"])
-    user = await user_repo.get_by_id(user_id)
-    if not user:
-        raise UserNotFoundError()
+    role = request.state.user["role"]
+    user = await usr_svc.get_me(user_id)
     
-    reservations, total = await res_repo.get_all_for_club(user.club_id, page, limit)
+    reservations, total = await res_svc.list_reservations(
+        user_id, role, user.club_id, page, limit
+    )
     
     return {
         "reservations": [ReservationResponse.model_validate(r) for r in reservations],
@@ -63,11 +66,9 @@ async def list_maintenance(
 ) -> MaintenanceWindowListResponse:
     """List all maintenance windows (admin only)"""
     user_id = int(request.state.user["sub"])
-    user = await user_repo.get_by_id(user_id)
-    if not user:
-        raise UserNotFoundError()
+    user = await usr_svc.get_me(user_id)
     
-    windows, total = await maint_repo.get_all(user.club_id, page, limit)
+    windows, total = await aircraft_svc.list_maintenance(user.club_id, page, limit)
     
     return {
         "maintenance_windows": [MaintenanceWindowResponse.model_validate(w) for w in windows],
@@ -86,11 +87,9 @@ async def create_maintenance(
 ) -> MaintenanceWindowResponseWrapper:
     """Create a maintenance window (admin only)"""
     user_id = int(request.state.user["sub"])
-    user = await user_repo.get_by_id(user_id)
-    if not user:
-        raise UserNotFoundError()
+    user = await usr_svc.get_me(user_id)
     
-    window = await maint_repo.create(user.club_id, req.maintenance_window)
+    window = await aircraft_svc.create_maintenance(user.club_id, req.maintenance_window)
     return {"maintenance_window": MaintenanceWindowResponse.model_validate(window)}
 
 
@@ -98,9 +97,7 @@ async def create_maintenance(
 @protected(UserRole.ADMIN)
 async def delete_maintenance(window_id: int, request: Request) -> None:
     """Delete a maintenance window (admin only)"""
-    deleted = await maint_repo.delete(window_id)
-    if not deleted:
-        raise ResourceNotFoundError("Maintenance window not found")
+    await aircraft_svc.delete_maintenance(window_id)
 
 
 @router.get("/users", response_model=UserListResponse)
@@ -112,11 +109,8 @@ async def list_users(
 ) -> UserListResponse:
     """List all users (admin only)"""
     user_id = int(request.state.user["sub"])
-    user = await user_repo.get_by_id(user_id)
-    if not user:
-        raise UserNotFoundError()
     
-    users, total = await user_repo.get_all(user.club_id, page, limit)
+    users, total = await usr_svc.list_users(user_id, page, limit)
     
     return {
         "users": [UserResponse.model_validate(u) for u in users],
@@ -133,17 +127,6 @@ async def list_users(
 async def create_user(req: UserCreateRequest, request: Request) -> UserResponseWrapper:
     """Create a new user (admin only)"""
     user_id = int(request.state.user["sub"])
-    user = await user_repo.get_by_id(user_id)
-    if not user:
-        raise UserNotFoundError()
     
-    data = req.user
-    
-    # Check if email is taken
-    existing = await user_repo.get_by_email(data.email)
-    if existing:
-        from fastapi import HTTPException
-        raise HTTPException(status_code=400, detail="Email already registered")
-        
-    new_user = await user_repo.create(user.club_id, data)
+    new_user = await usr_svc.create_user(user_id, req.user)
     return {"user": UserResponse.model_validate(new_user)}
