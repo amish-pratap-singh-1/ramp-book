@@ -2,7 +2,13 @@
 
 from pydantic import BaseModel
 
-class HealthResponse(BaseModel):
-    """Application health response"""
+
+class HealthData(BaseModel):
+    """Application health data"""
     status: str
     message: str
+
+
+class HealthResponse(BaseModel):
+    """Application health response wrapper"""
+    health: HealthData

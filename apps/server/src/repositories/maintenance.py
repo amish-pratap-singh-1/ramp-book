@@ -1,14 +1,17 @@
 """Maintenance window repository"""
 
 import datetime
+import logging
 from typing import Optional
 
-from sqlalchemy import and_, select
+from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.entities.maintenance_window import MaintenanceWindow
 from src.schemas.maintenance import MaintenanceWindowCreate
 from src.svc.dbsvc import DbSvc
+
+logger = logging.getLogger(__name__)
 
 
 class MaintenanceRepository:
@@ -17,27 +20,33 @@ class MaintenanceRepository:
     def __init__(self):
         self.db_svc = DbSvc()
 
-    async def get_all(self, club_id: int) -> list[MaintenanceWindow]:
-        """Get all maintenance windows for a club"""
+    async def get_all(self, club_id: int, page: int = 1, limit: int = 20) -> tuple[list[MaintenanceWindow], int]:
+        """Get all maintenance windows for a club with pagination"""
         async with self.db_svc.get_sessionmaker()() as session:
-            result = await session.execute(
-                select(MaintenanceWindow).where(
-                    MaintenanceWindow.club_id == club_id
-                )
-            )
-            return list(result.scalars().all())
+            count_stmt = select(func.count()).select_from(MaintenanceWindow).where(MaintenanceWindow.club_id == club_id)
+            total = await session.scalar(count_stmt)
+
+            stmt = select(MaintenanceWindow).where(
+                MaintenanceWindow.club_id == club_id
+            ).offset((page - 1) * limit).limit(limit)
+            
+            result = await session.execute(stmt)
+            return list(result.scalars().all()), total or 0
 
     async def get_by_aircraft(
-        self, aircraft_id: int
-    ) -> list[MaintenanceWindow]:
-        """Get maintenance windows for a specific aircraft"""
+        self, aircraft_id: int, page: int = 1, limit: int = 20
+    ) -> tuple[list[MaintenanceWindow], int]:
+        """Get maintenance windows for a specific aircraft with pagination"""
         async with self.db_svc.get_sessionmaker()() as session:
-            result = await session.execute(
-                select(MaintenanceWindow).where(
-                    MaintenanceWindow.aircraft_id == aircraft_id
-                )
-            )
-            return list(result.scalars().all())
+            count_stmt = select(func.count()).select_from(MaintenanceWindow).where(MaintenanceWindow.aircraft_id == aircraft_id)
+            total = await session.scalar(count_stmt)
+
+            stmt = select(MaintenanceWindow).where(
+                MaintenanceWindow.aircraft_id == aircraft_id
+            ).offset((page - 1) * limit).limit(limit)
+
+            result = await session.execute(stmt)
+            return list(result.scalars().all()), total or 0
 
     async def get_by_id(self, window_id: int) -> Optional[MaintenanceWindow]:
         """Get a maintenance window by id"""
@@ -58,6 +67,7 @@ class MaintenanceRepository:
             session.add(window)
             await session.commit()
             await session.refresh(window)
+            logger.info("Maintenance window created: %s", window.id)
             return window
 
     async def delete(self, window_id: int) -> bool:
@@ -73,4 +83,5 @@ class MaintenanceRepository:
                 return False
             await session.delete(window)
             await session.commit()
+            logger.info("Maintenance window deleted: %s", window_id)
             return True

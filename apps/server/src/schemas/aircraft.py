@@ -5,6 +5,7 @@ from typing import Optional
 from pydantic import BaseModel
 
 from src.entities.aircraft import AircraftStatus
+from src.schemas.meta import Pagination
 
 
 class AircraftCreate(BaseModel):
@@ -18,6 +19,11 @@ class AircraftCreate(BaseModel):
     notes: Optional[str] = None
 
 
+class AircraftCreateRequest(BaseModel):
+    """Aircraft creation request wrapper"""
+    aircraft: AircraftCreate
+
+
 class AircraftUpdate(BaseModel):
     """Schema for updating an aircraft"""
 
@@ -27,6 +33,11 @@ class AircraftUpdate(BaseModel):
     total_hobbs_hours: Optional[float] = None
     status: Optional[AircraftStatus] = None
     notes: Optional[str] = None
+
+
+class AircraftUpdateRequest(BaseModel):
+    """Aircraft update request wrapper"""
+    aircraft: AircraftUpdate
 
 
 class AircraftResponse(BaseModel):
@@ -44,6 +55,18 @@ class AircraftResponse(BaseModel):
 
     model_config = {"from_attributes": True}
 
+
+class AircraftResponseWrapper(BaseModel):
+    """Aircraft response wrapper"""
+    aircraft: AircraftResponse
+
+
+class AircraftListResponse(BaseModel):
+    """Aircraft list response"""
+    aircrafts: list[AircraftResponse]
+    pagination: Pagination
+
+
 class AircraftScheduleItem(BaseModel):
     """Schema for a scheduled block (reservation or maintenance)"""
 
@@ -51,3 +74,9 @@ class AircraftScheduleItem(BaseModel):
     start_time: str
     end_time: str
     type: str # 'reservation' | 'maintenance'
+
+
+class AircraftScheduleListResponse(BaseModel):
+    """Aircraft schedule list response"""
+    schedules: list[AircraftScheduleItem]
+    pagination: Pagination

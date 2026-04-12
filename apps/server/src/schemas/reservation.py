@@ -6,6 +6,7 @@ from typing import Optional
 from pydantic import BaseModel, model_validator
 
 from src.entities.reservation import ReservationStatus
+from src.schemas.meta import Pagination
 
 
 class ReservationCreate(BaseModel):
@@ -24,6 +25,11 @@ class ReservationCreate(BaseModel):
         return self
 
 
+class ReservationCreateRequest(BaseModel):
+    """Reservation creation request wrapper"""
+    reservation: ReservationCreate
+
+
 class ReservationUpdate(BaseModel):
     """Schema for updating a reservation (time window / instructor only)"""
 
@@ -39,6 +45,11 @@ class ReservationUpdate(BaseModel):
         return self
 
 
+class ReservationUpdateRequest(BaseModel):
+    """Reservation update request wrapper"""
+    reservation: ReservationUpdate
+
+
 class FlightCompleteRequest(BaseModel):
     """Schema for completing a flight (entering hobbs hours)"""
 
@@ -50,6 +61,11 @@ class FlightCompleteRequest(BaseModel):
         if self.hobbs_end <= self.hobbs_start:
             raise ValueError("hobbs_end must be greater than hobbs_start")
         return self
+
+
+class FlightCompleteRequestWrapper(BaseModel):
+    """Flight complete request wrapper"""
+    flight_data: FlightCompleteRequest
 
 
 class ReservationMemberInfo(BaseModel):
@@ -92,3 +108,14 @@ class ReservationResponse(BaseModel):
     instructor: Optional[ReservationMemberInfo] = None
 
     model_config = {"from_attributes": True}
+
+
+class ReservationResponseWrapper(BaseModel):
+    """Reservation response wrapper"""
+    reservation: ReservationResponse
+
+
+class ReservationListResponse(BaseModel):
+    """Reservation list response"""
+    reservations: list[ReservationResponse]
+    pagination: Pagination

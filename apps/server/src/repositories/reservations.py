@@ -1,15 +1,19 @@
 """Reservations repository"""
 
 import datetime
+import logging
 from typing import Optional
 
-from sqlalchemy import and_, or_, select
+from sqlalchemy import and_, func, or_, select
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from src.entities.reservation import Reservation, ReservationStatus
 from src.entities.aircraft import Aircraft
 from src.schemas.reservation import ReservationCreate, ReservationUpdate
 from src.svc.dbsvc import DbSvc
+
+logger = logging.getLogger(__name__)
 
 
 class ReservationRepository:
@@ -26,38 +30,56 @@ class ReservationRepository:
             selectinload(Reservation.instructor),
         )
 
-    async def get_all_for_club(self, club_id: int) -> list[Reservation]:
-        """Get all reservations for a club (admin view)"""
+    async def get_all_for_club(self, club_id: int, page: int = 1, limit: int = 20) -> tuple[list[Reservation], int]:
+        """Get all reservations for a club (admin view) with pagination"""
         async with self.db_svc.get_sessionmaker()() as session:
-            result = await session.execute(
+            count_stmt = select(func.count()).select_from(Reservation).where(Reservation.club_id == club_id)
+            total = await session.scalar(count_stmt)
+
+            stmt = (
                 select(Reservation)
                 .where(Reservation.club_id == club_id)
                 .options(*self._with_relations())
                 .order_by(Reservation.start_time.desc())
+                .offset((page - 1) * limit)
+                .limit(limit)
             )
-            return list(result.scalars().all())
+            result = await session.execute(stmt)
+            return list(result.scalars().all()), total or 0
 
-    async def get_for_member(self, member_id: int) -> list[Reservation]:
-        """Get all reservations for a specific member"""
+    async def get_for_member(self, member_id: int, page: int = 1, limit: int = 20) -> tuple[list[Reservation], int]:
+        """Get all reservations for a specific member with pagination"""
         async with self.db_svc.get_sessionmaker()() as session:
-            result = await session.execute(
+            count_stmt = select(func.count()).select_from(Reservation).where(Reservation.member_id == member_id)
+            total = await session.scalar(count_stmt)
+
+            stmt = (
                 select(Reservation)
                 .where(Reservation.member_id == member_id)
                 .options(*self._with_relations())
                 .order_by(Reservation.start_time.desc())
+                .offset((page - 1) * limit)
+                .limit(limit)
             )
-            return list(result.scalars().all())
+            result = await session.execute(stmt)
+            return list(result.scalars().all()), total or 0
 
-    async def get_for_instructor(self, instructor_id: int) -> list[Reservation]:
-        """Get all reservations where this user is the instructor"""
+    async def get_for_instructor(self, instructor_id: int, page: int = 1, limit: int = 20) -> tuple[list[Reservation], int]:
+        """Get all reservations where this user is the instructor with pagination"""
         async with self.db_svc.get_sessionmaker()() as session:
-            result = await session.execute(
+            count_stmt = select(func.count()).select_from(Reservation).where(Reservation.instructor_id == instructor_id)
+            total = await session.scalar(count_stmt)
+
+            stmt = (
                 select(Reservation)
                 .where(Reservation.instructor_id == instructor_id)
                 .options(*self._with_relations())
                 .order_by(Reservation.start_time.desc())
+                .offset((page - 1) * limit)
+                .limit(limit)
             )
-            return list(result.scalars().all())
+            result = await session.execute(stmt)
+            return list(result.scalars().all()), total or 0
 
     async def get_by_id(self, reservation_id: int) -> Optional[Reservation]:
         """Get a reservation by id with relations loaded"""
@@ -87,6 +109,7 @@ class ReservationRepository:
             session.add(reservation)
             await session.commit()
             await session.refresh(reservation)
+            logger.info("Reservation created: %s", reservation.id)
             # Reload with relations
             return await self.get_by_id(reservation.id)
 
@@ -107,6 +130,7 @@ class ReservationRepository:
             for field, value in data.model_dump(exclude_none=True).items():
                 setattr(reservation, field, value)
             await session.commit()
+            logger.info("Reservation updated: %s", reservation_id)
         return await self.get_by_id(reservation_id)
 
     async def cancel(self, reservation_id: int) -> Optional[Reservation]:
@@ -120,6 +144,7 @@ class ReservationRepository:
                 return None
             reservation.status = ReservationStatus.CANCELLED
             await session.commit()
+            logger.info("Reservation cancelled: %s", reservation_id)
         return await self.get_by_id(reservation_id)
 
     async def complete(
@@ -151,6 +176,7 @@ class ReservationRepository:
                 aircraft.total_hobbs_hours += hobbs_end - hobbs_start
 
             await session.commit()
+            logger.info("Reservation completed: %s", reservation_id)
         return await self.get_by_id(reservation_id)
 
     # ── Conflict helpers ─────────────────────────────────────────────────────

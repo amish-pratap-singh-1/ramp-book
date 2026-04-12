@@ -5,6 +5,8 @@ from typing import Optional
 
 from pydantic import BaseModel, model_validator
 
+from src.schemas.meta import Pagination
+
 
 class MaintenanceWindowCreate(BaseModel):
     """Schema for creating a maintenance window"""
@@ -21,6 +23,11 @@ class MaintenanceWindowCreate(BaseModel):
         return self
 
 
+class MaintenanceWindowCreateRequest(BaseModel):
+    """Maintenance window creation request wrapper"""
+    maintenance_window: MaintenanceWindowCreate
+
+
 class MaintenanceWindowResponse(BaseModel):
     """Schema for maintenance window response"""
 
@@ -32,3 +39,14 @@ class MaintenanceWindowResponse(BaseModel):
     reason: Optional[str] = None
 
     model_config = {"from_attributes": True}
+
+
+class MaintenanceWindowResponseWrapper(BaseModel):
+    """Maintenance window response wrapper"""
+    maintenance_window: MaintenanceWindowResponse
+
+
+class MaintenanceWindowListResponse(BaseModel):
+    """Maintenance window list response"""
+    maintenance_windows: list[MaintenanceWindowResponse]
+    pagination: Pagination

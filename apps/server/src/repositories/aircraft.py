@@ -1,9 +1,10 @@
 """Aircraft repository"""
 
 import datetime
+import logging
 from typing import Optional
 
-from sqlalchemy import and_, select
+from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.entities.aircraft import Aircraft
@@ -12,6 +13,8 @@ from src.entities.reservation import Reservation, ReservationStatus
 from src.schemas.aircraft import AircraftCreate, AircraftScheduleItem, AircraftUpdate
 from src.svc.dbsvc import DbSvc
 
+logger = logging.getLogger(__name__)
+
 
 class AircraftRepository:
     """Aircraft data access layer"""
@@ -19,13 +22,15 @@ class AircraftRepository:
     def __init__(self):
         self.db_svc = DbSvc()
 
-    async def get_all(self, club_id: int) -> list[Aircraft]:
-        """Get all aircraft for a club"""
+    async def get_all(self, club_id: int, page: int = 1, limit: int = 20) -> tuple[list[Aircraft], int]:
+        """Get all aircraft for a club with pagination"""
         async with self.db_svc.get_sessionmaker()() as session:
-            result = await session.execute(
-                select(Aircraft).where(Aircraft.club_id == club_id)
-            )
-            return list(result.scalars().all())
+            count_stmt = select(func.count()).select_from(Aircraft).where(Aircraft.club_id == club_id)
+            total = await session.scalar(count_stmt)
+
+            stmt = select(Aircraft).where(Aircraft.club_id == club_id).offset((page - 1) * limit).limit(limit)
+            result = await session.execute(stmt)
+            return list(result.scalars().all()), total or 0
 
     async def get_by_id(self, aircraft_id: int) -> Optional[Aircraft]:
         """Get aircraft by id"""
@@ -42,6 +47,7 @@ class AircraftRepository:
             session.add(aircraft)
             await session.commit()
             await session.refresh(aircraft)
+            logger.info("Aircraft created: %s", aircraft.id)
             return aircraft
 
     async def update(
@@ -59,6 +65,7 @@ class AircraftRepository:
                 setattr(aircraft, field, value)
             await session.commit()
             await session.refresh(aircraft)
+            logger.info("Aircraft updated: %s", aircraft_id)
             return aircraft
 
     async def is_available(
@@ -104,6 +111,8 @@ class AircraftRepository:
 
     async def get_schedule(self, aircraft_id: int) -> list[AircraftScheduleItem]:
         """Fetch all busy blocks (reservations and maintenance) for an aircraft"""
+        # Note: Schedule is typically not paginated in the same way as main listings
+        # because it represents a continuous timeline. Keeping it simple for now.
         schedule = []
         async with self.db_svc.get_sessionmaker()() as session:
             # 1. Fetch future confirmed reservations

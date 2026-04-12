@@ -1,6 +1,6 @@
 """Reservations API router"""
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Query, Request
 
 from src.decorators.auth import protected
 from src.entities.reservation import ReservationStatus
@@ -9,10 +9,12 @@ from src.repositories.aircraft import AircraftRepository
 from src.repositories.reservations import ReservationRepository
 from src.repositories.users import UserRepository
 from src.schemas.reservation import (
-    FlightCompleteRequest,
-    ReservationCreate,
+    FlightCompleteRequestWrapper,
+    ReservationCreateRequest,
+    ReservationListResponse,
     ReservationResponse,
-    ReservationUpdate,
+    ReservationResponseWrapper,
+    ReservationUpdateRequest,
 )
 from src.svc.errsvc import (
     ConflictError,
@@ -28,9 +30,13 @@ aircraft_repo = AircraftRepository()
 user_repo = UserRepository()
 
 
-@router.get("/", response_model=list[ReservationResponse])
+@router.get("/", response_model=ReservationListResponse)
 @protected()
-async def list_reservations(request: Request) -> list[ReservationResponse]:
+async def list_reservations(
+    request: Request,
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=100)
+) -> ReservationListResponse:
     """
     Admin → all reservations in the club.
     Member/Instructor → their own reservations.
@@ -43,20 +49,27 @@ async def list_reservations(request: Request) -> list[ReservationResponse]:
         raise UserNotFoundError()
 
     if role == UserRole.ADMIN:
-        reservations = await res_repo.get_all_for_club(user.club_id)
+        reservations, total = await res_repo.get_all_for_club(user.club_id, page, limit)
     elif role == UserRole.INSTRUCTOR:
-        reservations = await res_repo.get_for_instructor(user_id)
+        reservations, total = await res_repo.get_for_instructor(user_id, page, limit)
     else:
-        reservations = await res_repo.get_for_member(user_id)
+        reservations, total = await res_repo.get_for_member(user_id, page, limit)
 
-    return [ReservationResponse.model_validate(r) for r in reservations]
+    return {
+        "reservations": [ReservationResponse.model_validate(r) for r in reservations],
+        "pagination": {
+            "page": page,
+            "limit": limit,
+            "total": total
+        }
+    }
 
 
-@router.get("/{reservation_id}", response_model=ReservationResponse)
+@router.get("/{reservation_id}", response_model=ReservationResponseWrapper)
 @protected()
 async def get_reservation(
     reservation_id: int, request: Request
-) -> ReservationResponse:
+) -> ReservationResponseWrapper:
     """Get a single reservation. Members can only see their own."""
     user_id = int(request.state.user["sub"])
     role = request.state.user["role"]
@@ -72,16 +85,17 @@ async def get_reservation(
         ) != str(user_id):
             raise ForbiddenError()
 
-    return ReservationResponse.model_validate(reservation)
+    return {"reservation": ReservationResponse.model_validate(reservation)}
 
 
-@router.post("/", response_model=ReservationResponse, status_code=201)
+@router.post("/", response_model=ReservationResponseWrapper, status_code=201)
 @protected()
 async def create_reservation(
-    data: ReservationCreate, request: Request
-) -> ReservationResponse:
+    req: ReservationCreateRequest, request: Request
+) -> ReservationResponseWrapper:
     """Create a reservation. Enforces all double-booking rules."""
     user_id = int(request.state.user["sub"])
+    data = req.reservation
 
     user = await user_repo.get_by_id(user_id)
     if not user:
@@ -110,17 +124,18 @@ async def create_reservation(
             )
 
     reservation = await res_repo.create(user.club_id, user_id, data)
-    return ReservationResponse.model_validate(reservation)
+    return {"reservation": ReservationResponse.model_validate(reservation)}
 
 
-@router.patch("/{reservation_id}", response_model=ReservationResponse)
+@router.patch("/{reservation_id}", response_model=ReservationResponseWrapper)
 @protected()
 async def update_reservation(
-    reservation_id: int, data: ReservationUpdate, request: Request
-) -> ReservationResponse:
+    reservation_id: int, req: ReservationUpdateRequest, request: Request
+) -> ReservationResponseWrapper:
     """Edit time window or instructor. Members can only edit their own confirmed reservations."""
     user_id = int(request.state.user["sub"])
     role = request.state.user["role"]
+    data = req.reservation
 
     reservation = await res_repo.get_by_id(reservation_id)
     if not reservation:
@@ -169,14 +184,14 @@ async def update_reservation(
             )
 
     updated = await res_repo.update(reservation_id, data)
-    return ReservationResponse.model_validate(updated)
+    return {"reservation": ReservationResponse.model_validate(updated)}
 
 
-@router.delete("/{reservation_id}", response_model=ReservationResponse)
+@router.delete("/{reservation_id}", response_model=ReservationResponseWrapper)
 @protected()
 async def cancel_reservation(
     reservation_id: int, request: Request
-) -> ReservationResponse:
+) -> ReservationResponseWrapper:
     """Cancel a reservation."""
     user_id = int(request.state.user["sub"])
     role = request.state.user["role"]
@@ -193,17 +208,18 @@ async def cancel_reservation(
         raise ConflictError("Only confirmed reservations can be cancelled")
 
     cancelled = await res_repo.cancel(reservation_id)
-    return ReservationResponse.model_validate(cancelled)
+    return {"reservation": ReservationResponse.model_validate(cancelled)}
 
 
-@router.post("/{reservation_id}/complete", response_model=ReservationResponse)
+@router.post("/{reservation_id}/complete", response_model=ReservationResponseWrapper)
 @protected()
 async def complete_reservation(
-    reservation_id: int, data: FlightCompleteRequest, request: Request
-) -> ReservationResponse:
+    reservation_id: int, req: FlightCompleteRequestWrapper, request: Request
+) -> ReservationResponseWrapper:
     """Log flight completion with hobbs hours."""
     user_id = int(request.state.user["sub"])
     role = request.state.user["role"]
+    data = req.flight_data
 
     reservation = await res_repo.get_by_id(reservation_id)
     if not reservation:
@@ -219,4 +235,4 @@ async def complete_reservation(
         raise ConflictError("Cannot complete a cancelled reservation")
 
     completed = await res_repo.complete(reservation_id, data.hobbs_start, data.hobbs_end)
-    return ReservationResponse.model_validate(completed)
+    return {"reservation": ReservationResponse.model_validate(completed)}

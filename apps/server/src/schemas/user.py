@@ -5,6 +5,7 @@ from typing import Optional
 from pydantic import BaseModel, EmailStr
 
 from src.entities.user import CertificateType, UserRole
+from src.schemas.meta import Pagination
 
 
 class UserCreate(BaseModel):
@@ -16,6 +17,11 @@ class UserCreate(BaseModel):
     role: UserRole
     certificate: Optional[CertificateType] = None
     ratings: Optional[str] = None
+
+
+class UserCreateRequest(BaseModel):
+    """User creation request wrapper"""
+    user: UserCreate
 
 
 class UserResponse(BaseModel):
@@ -31,3 +37,14 @@ class UserResponse(BaseModel):
     is_active: bool
 
     model_config = {"from_attributes": True}
+
+
+class UserResponseWrapper(BaseModel):
+    """User response wrapper"""
+    user: UserResponse
+
+
+class UserListResponse(BaseModel):
+    """User list response"""
+    users: list[UserResponse]
+    pagination: Pagination
