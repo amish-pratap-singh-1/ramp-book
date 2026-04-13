@@ -17,3 +17,24 @@ Common for DELETE or updates
 Only part of the resource is returned
 Used in file downloads / streaming
 
+500 — Internal Server Error
+Generic error when something unexpected happens on server
+Usually: bugs, exceptions, DB failure
+
+501 — Not Implemented
+Server doesn’t support required functionality
+Example: unsupported HTTP method
+
+502 — Bad Gateway
+Server (proxy/load balancer) got invalid response from upstream service
+Common in microservices / reverse proxy setups
+
+503 — Service Unavailable
+Server is overloaded or under maintenance
+Usually temporary
+Should ideally include Retry-After header
+
+504 — Gateway Timeout
+Upstream service didn’t respond in time
+Happens with slow APIs / network issues
+505 — HTTP Version Not Supported
