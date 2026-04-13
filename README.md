@@ -51,6 +51,14 @@ To ensure the assignment criteria are met, the following core features are imple
 - Python 3.10+ (with `poetry`)
 
 ### Quick Start
+#### create .env from sample.env 
+```bash
+cp sample.env .env
+```
+```bash
+cp apps/client/sample.env apps/client/.env.local
+```
+#### Run project
 ```bash
 make run-project
 ```

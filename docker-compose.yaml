@@ -16,7 +16,7 @@ services:
     env_file:
       - .env
     environment:
-      - db_host=postgres
+      - DB_HOST=postgres
     ports:
       - "8000:8000"
     depends_on:
