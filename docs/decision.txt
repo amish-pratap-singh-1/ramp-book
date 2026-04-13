@@ -7,24 +7,20 @@
 
 2. Going with int id for saving time
 
-3. Server architecture 
-    - RBAC for (member, instructor, admin)
-    - api layer 
-    - svc layer
-    - repositories
-    - entities
-
-    - it only has error and info logs for now
+3. RBAC implementation
+    - Authentication + RBAC (simple jwt implementation)
+    - protect decorator
 
 4. member, instructor, admin all are users with different roles
 
-5. postgres root user vs app user 
+5. All db time will be in UTC 
+    - it will be converted to timezone on the client side
+
+6. postgres root user vs app user 
     - restricted access to app user (only app-db access)
 
-6. Client architecture
-    - Nestjs client
-    - axios
-    - react hook form 
-    - tanstack query for api calls
-    - react-big-calender 
-    - sonner for toast
+7. backend has proper error handling and info logs
+    - no debug logs (save time)
+    - errsvc
+    - logsvc
+
